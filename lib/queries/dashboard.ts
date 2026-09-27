@@ -53,7 +53,9 @@ export async function getRecentCars(limit = 5) {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from('cars')
-    .select('id, slug, variant, year, price, status, created_at, brand:brands(name), model:models!cars_model_id_brand_id_fkey(name)')
+    .select(
+      'id, slug, variant, year, price, status, created_at, brand:brands(name), model:models!cars_model_id_brand_id_fkey(name)',
+    )
     .order('created_at', { ascending: false })
     .limit(limit);
   if (error) throw new Error(`Could not load recent cars: ${error.message}`);

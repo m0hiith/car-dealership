@@ -6,9 +6,10 @@ import { requireAdmin } from '@/lib/auth';
 import { CACHE_TAGS } from '@/lib/cache-tags';
 import type { CarStatus } from '@/lib/car-options';
 import { canMoveTo } from '@/lib/car-status';
-import { slugify, withSlugSuffix } from '@/lib/slug';
+import { buildCarSlug, slugify, withSlugSuffix } from '@/lib/slug';
 import { getSupabasePublicEnv } from '@/lib/supabase/env';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { carStatusChangeSchema, type CarStatusChange } from '@/lib/validation/admin-cars';
 import {
   carFieldErrors,
   carIdSchema,
@@ -281,4 +282,154 @@ export async function discardCarPhoto(carId: string, path: string): Promise<void
     .eq('storage_path', photo.data);
   if (error || count !== 0) return;
   await supabase.storage.from(BUCKET).remove([photo.data]);
+}
+
+// ---------------------------------------------------------------------------
+// Inventory row actions (/admin/cars)
+// ---------------------------------------------------------------------------
+
+export type CarActionResult = { ok: true } | { ok: false; error: string };
+
+function revalidateCar(slug: string) {
+  updateTag(CACHE_TAGS.cars);
+  updateTag(CACHE_TAGS.car(slug));
+  revalidatePath('/admin', 'layout');
+}
+
+/** Quick status change from the list. Same rules as the form's status actions. */
+export async function setCarStatus(raw: CarStatusChange): Promise<CarActionResult> {
+  await requireAdmin();
+  const parsed = carStatusChangeSchema.safeParse(raw);
+  if (!parsed.success) return { ok: false, error: 'Invalid request.' };
+  const { id, to } = parsed.data;
+
+  const supabase = await createSupabaseServerClient();
+  const { data: car, error: loadError } = await supabase.from('cars').select('status, slug').eq('id', id).maybeSingle();
+  if (loadError) return { ok: false, error: 'Could not update the car. Please try again.' };
+  if (!car) return { ok: false, error: 'This car no longer exists. Reload the page.' };
+  if (car.status === to) return { ok: true };
+  if (!canMoveTo(car.status, to)) {
+    return { ok: false, error: 'That status change is not allowed. Reload the page and try again.' };
+  }
+
+  // Only update if nobody changed the status in the meantime.
+  const { count, error } = await supabase
+    .from('cars')
+    .update({ status: to }, { count: 'exact' })
+    .eq('id', id)
+    .eq('status', car.status);
+  if (error) {
+    if (error.hint === 'car_needs_photo') {
+      return { ok: false, error: 'Add at least one photo before publishing. Open the car to add photos.' };
+    }
+    console.error('setCarStatus failed', { carId: id, code: error.code, message: error.message });
+    return { ok: false, error: 'Could not update the car. Please try again.' };
+  }
+  if (count === 0) return { ok: false, error: 'Someone else just changed this car. Reload the page and try again.' };
+
+  revalidateCar(car.slug);
+  return { ok: true };
+}
+
+export type DuplicateCarResult = { ok: true; id: string } | { ok: false; error: string };
+
+/** A new draft with every field and feature copied, except photos and the web address. */
+export async function duplicateCar(carId: string): Promise<DuplicateCarResult> {
+  await requireAdmin();
+  const id = carIdSchema.safeParse(carId);
+  if (!id.success) return { ok: false, error: 'Invalid car.' };
+
+  const supabase = await createSupabaseServerClient();
+  const { data: car, error: loadError } = await supabase
+    .from('cars')
+    .select(
+      'brand_id, model_id, variant, price, original_price, year, kms_driven, fuel_type, transmission, body_type, engine_cc, owners, color, registration_state, registration_city, description, featured, brand:brands(name), model:models!cars_model_id_brand_id_fkey(name), car_features(feature_name)',
+    )
+    .eq('id', id.data)
+    .maybeSingle();
+  if (loadError) return { ok: false, error: 'Could not duplicate the car. Please try again.' };
+  if (!car) return { ok: false, error: 'This car no longer exists. Reload the page.' };
+
+  const newId = randomUUID();
+  const slug = await findFreeSlug(
+    supabase,
+    buildCarSlug({
+      year: car.year,
+      brand: car.brand?.name,
+      model: car.model?.name,
+      variant: car.variant,
+      fuelType: car.fuel_type,
+      transmission: car.transmission,
+    }),
+    newId,
+  );
+
+  const { url } = getSupabasePublicEnv();
+  const { error } = await supabase.rpc('save_car', {
+    p_car_id: newId,
+    p_car: {
+      brand_id: car.brand_id,
+      model_id: car.model_id,
+      variant: car.variant,
+      slug,
+      price: car.price,
+      original_price: car.original_price,
+      year: car.year,
+      kms_driven: car.kms_driven,
+      fuel_type: car.fuel_type,
+      transmission: car.transmission,
+      body_type: car.body_type,
+      engine_cc: car.engine_cc,
+      owners: car.owners,
+      color: car.color,
+      registration_state: car.registration_state,
+      registration_city: car.registration_city,
+      description: car.description,
+      status: 'draft',
+      featured: car.featured,
+    },
+    p_features: car.car_features.map((f) => f.feature_name),
+    p_photos: [],
+    p_photo_base_url: `${url}/storage/v1/object/public/${BUCKET}`,
+  });
+  if (error) {
+    console.error('duplicateCar failed', { carId: id.data, code: error.code, message: error.message });
+    return { ok: false, error: 'Could not duplicate the car. Please try again.' };
+  }
+
+  revalidatePath('/admin', 'layout');
+  return { ok: true, id: newId };
+}
+
+/**
+ * Permanently deletes a draft and its photo files. Anything that has been
+ * published is archived instead; RLS enforces the same rule.
+ */
+export async function deleteDraftCar(carId: string): Promise<CarActionResult> {
+  await requireAdmin();
+  const id = carIdSchema.safeParse(carId);
+  if (!id.success) return { ok: false, error: 'Invalid car.' };
+
+  const supabase = await createSupabaseServerClient();
+  const { count, error } = await supabase
+    .from('cars')
+    .delete({ count: 'exact' })
+    .eq('id', id.data)
+    .eq('status', 'draft');
+  if (error) {
+    console.error('deleteDraftCar failed', { carId: id.data, code: error.code, message: error.message });
+    return { ok: false, error: 'Could not delete the car. Please try again.' };
+  }
+  if (count === 0) return { ok: false, error: 'Only drafts can be deleted. Archive this car instead.' };
+
+  // Best effort: the car row is gone, so leftover files never show anywhere.
+  const storage = supabase.storage.from(BUCKET);
+  const { data: files } = await storage.list(id.data, { limit: 1000 });
+  if (files?.length) {
+    const { error: removeError } = await storage.remove(files.map((f) => `${id.data}/${f.name}`));
+    if (removeError) console.error('Could not delete photos of a deleted draft', { carId: id.data });
+  }
+
+  revalidatePath('/admin', 'layout');
+  return { ok: true };
 }

@@ -1,6 +1,12 @@
 import 'server-only';
-import type { BodyType, CarStatus, FuelType, Transmission } from '@/lib/car-options';
+import { CAR_STATUSES, type BodyType, type CarStatus, type FuelType, type Transmission } from '@/lib/car-options';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import {
+  INVENTORY_PAGE_SIZE,
+  inventorySearchTokens,
+  type InventoryParams,
+  type InventorySort,
+} from '@/lib/validation/admin-cars';
 
 // Runs as the signed-in user, so RLS limits results to admins. Callers must
 // still call requireAdmin() first.
@@ -99,4 +105,157 @@ export async function getCarForEdit(id: string): Promise<CarForEdit | null> {
     features: car.car_features.map((f) => f.feature_name).sort((a, b) => a.localeCompare(b)),
     photos,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Inventory list (/admin/cars)
+// ---------------------------------------------------------------------------
+
+export type InventoryCar = {
+  id: string;
+  slug: string;
+  title: string;
+  variant: string | null;
+  price: number;
+  year: number;
+  kmsDriven: number;
+  status: CarStatus;
+  featured: boolean;
+  createdAt: string;
+  updatedAt: string;
+  coverUrl: string | null;
+};
+
+export type InventoryCounts = Record<CarStatus | 'all', number>;
+
+export type Inventory = {
+  cars: InventoryCar[];
+  counts: InventoryCounts;
+  /** Cars in the current tab, after search and filters. */
+  total: number;
+  page: number;
+  pageCount: number;
+  brands: { id: string; name: string }[];
+};
+
+type Client = Awaited<ReturnType<typeof createSupabaseServerClient>>;
+
+const SORT_COLUMNS: Record<
+  InventorySort,
+  { column: 'updated_at' | 'created_at' | 'price' | 'year'; ascending: boolean }
+> = {
+  updated: { column: 'updated_at', ascending: false },
+  created: { column: 'created_at', ascending: false },
+  price_desc: { column: 'price', ascending: false },
+  price_asc: { column: 'price', ascending: true },
+  year_desc: { column: 'year', ascending: false },
+};
+
+/**
+ * PostgREST `or` filter for the search box: every word must match the
+ * brand, model, variant or year. Brand and model names live in their own
+ * (small) tables, so words are matched against those here and turned into
+ * id lists. Returns null when there is nothing to search for.
+ */
+function searchFilter(
+  tokens: string[],
+  brands: { id: string; name: string }[],
+  models: { id: string; name: string }[],
+) {
+  if (tokens.length === 0) return null;
+  const clauses = tokens.map((token) => {
+    const parts = [`variant.ilike.*${token}*`];
+    const brandIds = brands.filter((b) => b.name.toLowerCase().includes(token)).map((b) => b.id);
+    const modelIds = models.filter((m) => m.name.toLowerCase().includes(token)).map((m) => m.id);
+    if (brandIds.length) parts.push(`brand_id.in.(${brandIds.join(',')})`);
+    if (modelIds.length) parts.push(`model_id.in.(${modelIds.join(',')})`);
+    if (/^\d{4}$/.test(token)) parts.push(`year.eq.${token}`);
+    return `or(${parts.join(',')})`;
+  });
+  return `and(${clauses.join(',')})`;
+}
+
+export async function getInventory(params: InventoryParams): Promise<Inventory> {
+  const supabase = await createSupabaseServerClient();
+  const [brandsRes, modelsRes] = await Promise.all([
+    supabase.from('brands').select('id, name').order('name'),
+    supabase.from('models').select('id, name'),
+  ]);
+  if (brandsRes.error) throw new Error(`Could not load brands: ${brandsRes.error.message}`);
+  if (modelsRes.error) throw new Error(`Could not load models: ${modelsRes.error.message}`);
+
+  const search = searchFilter(inventorySearchTokens(params.q), brandsRes.data, modelsRes.data);
+
+  /** Search and filters, but not the status tab. Shared by the counts and the list. */
+  function filtered<Q extends { or(f: string): Q; eq(c: string, v: string): Q }>(query: Q): Q {
+    let q = query;
+    if (search) q = q.or(search);
+    if (params.brand) q = q.eq('brand_id', params.brand);
+    if (params.fuel) q = q.eq('fuel_type', params.fuel);
+    if (params.transmission) q = q.eq('transmission', params.transmission);
+    return q;
+  }
+
+  const counts = await countByStatus(supabase, filtered);
+  const total = params.status ? counts[params.status] : counts.all;
+  const pageCount = Math.max(1, Math.ceil(total / INVENTORY_PAGE_SIZE));
+  const page = Math.min(params.page, pageCount);
+  const from = (page - 1) * INVENTORY_PAGE_SIZE;
+  const sort = SORT_COLUMNS[params.sort];
+
+  let cars: InventoryCar[] = [];
+  if (total > 0) {
+    let query = filtered(
+      supabase
+        .from('cars')
+        .select(
+          'id, slug, variant, price, year, kms_driven, status, featured, created_at, updated_at, brand:brands(name), model:models!cars_model_id_brand_id_fkey(name), car_images(image_url)',
+        ),
+    )
+      // Only the cover photo.
+      .eq('car_images.is_primary', true)
+      .limit(1, { referencedTable: 'car_images' });
+    if (params.status) query = query.eq('status', params.status);
+    const { data, error } = await query
+      .order(sort.column, { ascending: sort.ascending })
+      // Stable order across pages when the sort column ties.
+      .order('id')
+      .range(from, from + INVENTORY_PAGE_SIZE - 1);
+    if (error) throw new Error(`Could not load cars: ${error.message}`);
+
+    cars = data.map((car) => ({
+      id: car.id,
+      slug: car.slug,
+      title: [car.year, car.brand?.name, car.model?.name].filter(Boolean).join(' '),
+      variant: car.variant,
+      price: car.price,
+      year: car.year,
+      kmsDriven: car.kms_driven,
+      status: car.status,
+      featured: car.featured,
+      createdAt: car.created_at,
+      updatedAt: car.updated_at,
+      coverUrl: car.car_images[0]?.image_url ?? null,
+    }));
+  }
+
+  return { cars, counts, total, page, pageCount, brands: brandsRes.data };
+}
+
+async function countByStatus(
+  supabase: Client,
+  filtered: <Q extends { or(f: string): Q; eq(c: string, v: string): Q }>(query: Q) => Q,
+): Promise<InventoryCounts> {
+  const results = await Promise.all(
+    CAR_STATUSES.map(async (status) => {
+      const { count, error } = await filtered(supabase.from('cars').select('id', { count: 'exact', head: true })).eq(
+        'status',
+        status,
+      );
+      if (error) throw new Error(`Could not count cars: ${error.message}`);
+      return [status, count ?? 0] as const;
+    }),
+  );
+  const counts = Object.fromEntries(results) as Record<CarStatus, number>;
+  return { ...counts, all: results.reduce((sum, [, n]) => sum + n, 0) };
 }

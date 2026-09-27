@@ -7,67 +7,7 @@ import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { MoreIcon } from '@/components/ui/icons';
 import { Modal } from '@/components/ui/modal';
 import type { CarStatus } from '@/lib/car-options';
-
-type StatusAction = {
-  to: CarStatus;
-  label: string;
-  description: string;
-  /** Asks again before running; for moves that take the car off the site. */
-  confirm?: { title: string; body: string; button: string };
-};
-
-const reserve: StatusAction = {
-  to: 'reserved',
-  label: 'Mark reserved',
-  description: 'Stays on the website with an amber “Reserved” label.',
-};
-const sell: StatusAction = {
-  to: 'sold',
-  label: 'Mark sold',
-  description: 'Removes the car from the website. Its link shows similar cars instead.',
-  confirm: {
-    title: 'Mark this car as sold?',
-    body: 'It will be removed from all listings on the website straight away.',
-    button: 'Mark sold',
-  },
-};
-const unpublish: StatusAction = {
-  to: 'draft',
-  label: 'Unpublish',
-  description: 'Hides the car from the website and moves it back to drafts.',
-};
-const archive: StatusAction = {
-  to: 'archived',
-  label: 'Archive',
-  description: 'Hides the car everywhere on the website. Use this for old or cancelled listings.',
-  confirm: {
-    title: 'Archive this car?',
-    body: 'It will be hidden from the website. You can restore it as a draft later.',
-    button: 'Archive',
-  },
-};
-
-const MORE_ACTIONS: Record<CarStatus, StatusAction[]> = {
-  draft: [],
-  published: [reserve, sell, unpublish, archive],
-  reserved: [
-    { to: 'published', label: 'Mark available', description: 'The deal fell through: removes the Reserved label.' },
-    sell,
-    unpublish,
-    archive,
-  ],
-  sold: [
-    {
-      to: 'published',
-      label: 'Mark available again',
-      description: 'Undo the sale and show the car on the website again.',
-    },
-    archive,
-  ],
-  archived: [
-    { to: 'draft', label: 'Restore as draft', description: 'Brings the car back so you can edit and publish it.' },
-  ],
-};
+import { MORE_STATUS_ACTIONS, type StatusAction } from '@/components/admin/car-status-actions';
 
 export type SaveBarProps = {
   /** Saved status, or null for a car that has not been saved yet. */
@@ -85,7 +25,7 @@ export function SaveBar({ status, dirty, pendingTo, uploading, onSave }: SaveBar
   const [confirming, setConfirming] = useState<StatusAction | null>(null);
   const busy = pendingTo !== null;
   const isDraft = status === null || status === 'draft';
-  const more = status ? MORE_ACTIONS[status] : [];
+  const more = status ? MORE_STATUS_ACTIONS[status] : [];
 
   function run(action: StatusAction) {
     setSheetOpen(false);
