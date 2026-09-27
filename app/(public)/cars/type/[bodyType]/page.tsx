@@ -1,0 +1,39 @@
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { CarsListing } from '@/components/cars/cars-listing';
+import { BODY_TYPE_LABELS, BODY_TYPES, type BodyType } from '@/lib/car-options';
+import { parseListingState } from '@/lib/validation/public-cars';
+
+async function loadBodyType(params: Promise<{ bodyType: string }>): Promise<BodyType> {
+  const { bodyType } = await params;
+  const match = BODY_TYPES.find((t) => t === bodyType);
+  if (!match) notFound();
+  return match;
+}
+
+/** "SUVs", "Sedans", "Luxury cars". */
+function plural(type: BodyType) {
+  return type === 'luxury' ? 'luxury cars' : `${BODY_TYPE_LABELS[type]}s`;
+}
+
+export async function generateMetadata({ params }: PageProps<'/cars/type/[bodyType]'>): Promise<Metadata> {
+  const type = await loadBodyType(params);
+  return {
+    title: `Used ${plural(type)} for sale`,
+    description: `Browse pre-owned ${plural(type)} in stock, with prices, photos and full details.`,
+    alternates: { canonical: `/cars/type/${type}` },
+  };
+}
+
+export default async function BodyTypeCarsPage({ params, searchParams }: PageProps<'/cars/type/[bodyType]'>) {
+  const [type, raw] = await Promise.all([loadBodyType(params), searchParams]);
+  return (
+    <CarsListing
+      basePath={`/cars/type/${type}`}
+      state={parseListingState(raw)}
+      fixed={{ bodyTypes: [type] }}
+      fixedLabel={BODY_TYPE_LABELS[type]}
+      title={`Used ${plural(type)}`}
+    />
+  );
+}

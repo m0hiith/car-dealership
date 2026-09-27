@@ -426,7 +426,45 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      filter_public_cars: {
+        Args: { p_filters: Json }
+        Returns: {
+          body_type: Database["public"]["Enums"]["body_type"]
+          brand_id: string
+          color: string | null
+          created_at: string
+          description: string | null
+          engine_cc: number | null
+          featured: boolean
+          fuel_type: Database["public"]["Enums"]["fuel_type"]
+          id: string
+          is_sample: boolean
+          kms_driven: number
+          model_id: string
+          original_price: number | null
+          owners: number
+          price: number
+          published_at: string | null
+          registration_city: string | null
+          registration_state: string | null
+          slug: string
+          sold_at: string | null
+          status: Database["public"]["Enums"]["car_status"]
+          transmission: Database["public"]["Enums"]["transmission"]
+          updated_at: string
+          variant: string | null
+          year: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "cars"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       is_admin: { Args: never; Returns: boolean }
+      jsonb_text_array: { Args: { p: Json }; Returns: string[] }
+      public_car_facets: { Args: { p_filters: Json }; Returns: Json }
       save_car: {
         Args: {
           p_car: Json

@@ -7,6 +7,8 @@ export const CACHE_TAGS = {
   cars: 'cars',
   /** Brand and model lists used by public filters. */
   brands: 'brands',
+  /** site_settings: dealership name, logo and contact details. */
+  settings: 'settings',
   /** One car's detail page. */
   car: (slug: string) => `car:${slug}`,
 } as const;
