@@ -10,6 +10,8 @@ How to connect this app to a Supabase project, apply the schema and make yoursel
 | `migrations/20260927100100_tables.sql` | All tables, FKs, checks, indexes, triggers; creates the single `homepage_content` and `site_settings` rows |
 | `migrations/20260927100200_rls.sql` | `is_admin()`, table grants and RLS policies on every table |
 | `migrations/20260927100300_storage.sql` | `car-images` and `site-media` buckets and their admin-only write policies |
+| `migrations/20260927110000_car_save.sql` | `save_car()` (saves a car, its features and photos in one transaction) and the rule that published/reserved cars need at least one photo |
+| `migrations/20260927110100_fix_car_photo_check.sql` | Fix for the photo rule's trigger function |
 | `seed.sql` | 12 brands with their models, plus 8 **sample** cars (`is_sample = true`) |
 
 ## 1. Create the project
@@ -35,7 +37,7 @@ From **Project Settings → API Keys** (the URL is under **Data API**):
 ```bash
 supabase login                                  # opens the browser once
 supabase link --project-ref <your-project-ref>  # the ref is in the project URL; enter the DB password
-supabase db push --dry-run                      # lists the 4 migrations it will apply
+supabase db push --dry-run                      # lists the migrations it will apply
 supabase db push --include-seed                 # applies them, then runs seed.sql
 ```
 

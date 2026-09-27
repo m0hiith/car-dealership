@@ -205,11 +205,11 @@ middleware.ts               # or proxy.ts, whichever the installed Next.js versi
 Tick each box when the phase works end-to-end, passes lint + typecheck, and is committed.
 
 - [x] **1. Setup:** CLAUDE.md, project scaffold, design tokens, UI primitives
-- [ ] **2. Database:** schema, enums, indexes, RLS, storage buckets, seed data, generated types
+- [x] **2. Database:** schema, enums, indexes, RLS, storage buckets, seed data, generated types
   - Tick once the migrations are applied to the hosted project and `npm run db:types` has regenerated `lib/database.types.ts` (see `docs/SUPABASE_SETUP.md`).
 - [x] **3. Admin auth and dashboard shell**
   - Includes session refresh: `lib/supabase/middleware.ts` plus the proxy/middleware file for the installed Next.js version.
-- [ ] **4. Add/Edit car:** form and image upload
+- [x] **4. Add/Edit car:** form and image upload
 - [ ] **5. Admin inventory:** table and status management
 - [ ] **6. Public `/cars`:** filters, sorting, pagination
 - [ ] **7. Car detail page and lead capture**

@@ -54,7 +54,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex flex-col items-center gap-2 p-4 md:items-end">
+      {/* Top on phones so toasts never cover sticky bottom bars (save bar, call/WhatsApp bar). */}
+      <div className="pointer-events-none fixed inset-x-0 top-0 z-50 flex flex-col items-center gap-2 p-4 pt-[max(1rem,env(safe-area-inset-top))] md:top-auto md:bottom-0 md:items-end md:pt-4">
         {/* Separate live regions so errors interrupt and everything else waits politely. */}
         <div role="status" aria-live="polite" className="flex w-full flex-col items-center gap-2 md:items-end">
           {items
@@ -94,7 +95,7 @@ function ToastView({ item, onDismiss }: { item: ToastItem; onDismiss: (id: numbe
       onBlur={() => setPaused(false)}
       className={cn(
         'pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-control border border-border bg-card p-4 shadow-overlay',
-        'transition-[opacity,translate] duration-200 motion-reduce:transition-none starting:translate-y-2 starting:opacity-0',
+        'transition-[opacity,translate] duration-200 motion-reduce:transition-none starting:-translate-y-2 starting:opacity-0 md:starting:translate-y-2',
       )}
     >
       <span className={cn('flex size-8 shrink-0 items-center justify-center rounded-full', iconClass)}>
