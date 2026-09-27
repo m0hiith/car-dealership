@@ -161,6 +161,14 @@
   }
 }
 
+/* Horizontal photo strips that swipe natively but show no scrollbar. */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /*
  * Dual range slider (components/ui/range-slider.tsx): two native range inputs
  * stacked on one rail. Only the thumbs take pointer events, so each thumb

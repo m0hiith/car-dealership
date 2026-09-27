@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
 import type { Database } from '@/lib/database.types';
 import { getSupabasePublicEnv } from './env';
@@ -44,4 +45,21 @@ export async function updateSession(request: NextRequest) {
 export function withSessionCookies(redirect: NextResponse, from: NextResponse) {
   from.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
   return redirect;
+}
+
+/**
+ * True if this slug belonged to a car that has been sold or archived, so
+ * the proxy can send its page as 410 Gone. Anon client, no cookies.
+ */
+export async function isCarGone(slug: string): Promise<boolean> {
+  const { url, anonKey } = getSupabasePublicEnv();
+  const supabase = createClient<Database>(url, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  });
+  const { data, error } = await supabase.rpc('get_unavailable_car_by_slug', { p_slug: slug });
+  if (error) {
+    console.error('Could not check car status', { slug, code: error.code, message: error.message });
+    return false;
+  }
+  return data.length > 0;
 }

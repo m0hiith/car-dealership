@@ -16,10 +16,12 @@ export type CarCardProps = {
   /** The likely LCP image: loaded eagerly at high priority. Everything else is lazy. */
   eager?: boolean;
   now: number;
+  /** h3 when the cards sit under their own section heading. */
+  titleAs?: 'h2' | 'h3';
 };
 
 /** The whole card links to the detail page. */
-export function CarCard({ car, eager = false, now }: CarCardProps) {
+export function CarCard({ car, eager = false, now, titleAs: Title = 'h2' }: CarCardProps) {
   const specs = [
     formatKm(car.kmsDriven),
     FUEL_LABELS[car.fuelType],
@@ -50,7 +52,7 @@ export function CarCard({ car, eager = false, now }: CarCardProps) {
           <CarBadges badges={carBadges(car, now)} className="absolute top-3 right-3 left-3" />
         </div>
         <div className="flex flex-1 flex-col gap-1 p-4">
-          <h2 className="text-headline-sm text-navy group-hover:text-action-ink">{car.title}</h2>
+          <Title className="text-headline-sm text-navy group-hover:text-action-ink">{car.title}</Title>
           <p className="truncate text-body-md text-muted">{car.variant || ' '}</p>
           <p className="mt-1 text-body-sm text-chip-ink">
             {specs.map((spec, i) => (

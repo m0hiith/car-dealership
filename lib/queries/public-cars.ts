@@ -26,6 +26,56 @@ export type PublicCarCard = {
   coverUrl: string | null;
 };
 
+/**
+ * Columns for a car card. Used on RPCs that return setof cars
+ * (filter_public_cars, similar_public_cars); sort the cover photo first
+ * and limit car_images to 1.
+ */
+export const CARD_SELECT =
+  'id, slug, variant, price, year, kms_driven, fuel_type, transmission, body_type, owners, status, featured, published_at, brand:brands(name), model:models!cars_model_id_brand_id_fkey(name), car_images(image_url, is_primary)';
+
+type CardRow = {
+  id: string;
+  slug: string;
+  variant: string | null;
+  price: number;
+  year: number;
+  kms_driven: number;
+  fuel_type: FuelType;
+  transmission: Transmission;
+  owners: number;
+  status: CarStatus;
+  featured: boolean;
+  published_at: string | null;
+  brand: { name: string } | null;
+  model: { name: string } | null;
+  car_images: { image_url: string }[];
+};
+
+export function carTitle(car: { year: number; brand: { name: string } | null; model: { name: string } | null }) {
+  return [car.year, car.brand?.name, car.model?.name].filter(Boolean).join(' ');
+}
+
+export function toPublicCarCard(car: CardRow): PublicCarCard {
+  return {
+    id: car.id,
+    slug: car.slug,
+    title: carTitle(car),
+    variant: car.variant,
+    price: car.price,
+    year: car.year,
+    kmsDriven: car.kms_driven,
+    fuelType: car.fuel_type,
+    transmission: car.transmission,
+    owners: car.owners,
+    // The public RPCs only return these two.
+    status: car.status === 'reserved' ? 'reserved' : 'published',
+    featured: car.featured,
+    publishedAt: car.published_at,
+    coverUrl: car.car_images[0]?.image_url ?? null,
+  };
+}
+
 export type PublicCarList = { cars: PublicCarCard[]; total: number };
 
 const SORTS: Record<PublicSort, { column: 'published_at' | 'price' | 'kms_driven' | 'year'; ascending: boolean }> = {
@@ -43,9 +93,7 @@ export const getPublicCars = unstable_cache(
     const order = SORTS[sort];
     const { data, count, error } = await supabase
       .rpc('filter_public_cars', { p_filters: filters }, { count: 'exact' })
-      .select(
-        'id, slug, variant, price, year, kms_driven, fuel_type, transmission, owners, status, featured, published_at, brand:brands(name), model:models!cars_model_id_brand_id_fkey(name), car_images(image_url, is_primary)',
-      )
+      .select(CARD_SELECT)
       // Cover photo only. (Filtering an embed is not supported on an RPC
       // result, so sort the cover first and take one.)
       .order('is_primary', { referencedTable: 'car_images', ascending: false })
@@ -60,23 +108,7 @@ export const getPublicCars = unstable_cache(
 
     return {
       total: count ?? 0,
-      cars: data.map((car) => ({
-        id: car.id,
-        slug: car.slug,
-        title: [car.year, car.brand?.name, car.model?.name].filter(Boolean).join(' '),
-        variant: car.variant,
-        price: car.price,
-        year: car.year,
-        kmsDriven: car.kms_driven,
-        fuelType: car.fuel_type,
-        transmission: car.transmission,
-        owners: car.owners,
-        // filter_public_cars only returns these two.
-        status: car.status === 'reserved' ? 'reserved' : 'published',
-        featured: car.featured,
-        publishedAt: car.published_at,
-        coverUrl: car.car_images[0]?.image_url ?? null,
-      })),
+      cars: data.map(toPublicCarCard),
     };
   },
   ['public-cars'],

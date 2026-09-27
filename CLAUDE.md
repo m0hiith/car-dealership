@@ -210,9 +210,9 @@ Tick each box when the phase works end-to-end, passes lint + typecheck, and is c
 - [x] **3. Admin auth and dashboard shell**
   - Includes session refresh: `lib/supabase/middleware.ts` plus the proxy/middleware file for the installed Next.js version.
 - [x] **4. Add/Edit car:** form and image upload
-- [ ] **5. Admin inventory:** table and status management
-- [ ] **6. Public `/cars`:** filters, sorting, pagination
-- [ ] **7. Car detail page and lead capture**
+- [x] **5. Admin inventory:** table and status management
+- [x] **6. Public `/cars`:** filters, sorting, pagination
+- [x] **7. Car detail page and lead capture**
   - Sold/archived pages: add a migration with a `SECURITY DEFINER` function such as `get_unavailable_car_by_slug(slug)` that returns only brand, model, variant, year, body_type and price for sold/archived cars (no images, no internal fields). The page says "this car has been sold" and shows similar available cars. Respond 410 for sold, 404 for draft or unknown slugs.
   - Lead form: anon has INSERT but no SELECT on `leads`, so the server action must insert without returning (no `.insert().select()`), or it fails under RLS.
 - [ ] **8. Homepage, content management, settings, testimonials**
