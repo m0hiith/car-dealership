@@ -1,5 +1,6 @@
-// Server-safe primitives. Client-only ones (Modal, BottomSheet, Toast) are
+// Server-safe primitives. Client-only ones (Modal, BottomSheet, Drawer, Toast) are
 // imported from their own files so this barrel never forces 'use client'.
+export { Alert, type AlertProps, type AlertTone } from './alert';
 export { Badge, type BadgeProps, type BadgeTone } from './badge';
 export { Button, buttonStyles, type ButtonProps, type ButtonSize, type ButtonVariant } from './button';
 export { Card, type CardProps } from './card';
