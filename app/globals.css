@@ -1,0 +1,162 @@
+@import 'tailwindcss';
+
+/*
+ * Design tokens. Source of truth: CLAUDE.md §3 and docs/DESIGN.md.
+ * Tailwind's default colour, shadow, radius and font scales are cleared so
+ * only these tokens exist; components must never use raw hex values.
+ */
+@theme {
+  /* ---------- Colours ---------- */
+  --color-*: initial;
+  --color-white: #ffffff;
+
+  --color-navy: #0b2545;
+  --color-navy-dark: #091e3a;
+  --color-action: #0284c7;
+  --color-highlight: #0ea5e9;
+  --color-trust: #16a34a;
+  --color-trust-light: #22c55e;
+  --color-reserved: #f59e0b;
+  --color-canvas: #f8fafc;
+  --color-card: #ffffff;
+  --color-border: #e2e8f0;
+
+  /* Supporting neutrals (DESIGN.md) */
+  --color-muted: #64748b; /* slate text */
+  --color-chip: #f1f5f9; /* chip background */
+  --color-chip-ink: #334155; /* chip + body text */
+  --color-input: #cbd5e1; /* input border */
+  --color-control: #94a3b8; /* checkbox border */
+  --color-tint: #bae6fd; /* level-2 hover border */
+  --color-focus: rgb(2 132 199 / 0.15); /* focus ring glow */
+
+  /* Soft tints for badges and toasts (text colours meet WCAG AA on their bg) */
+  --color-trust-soft: #dcfce7;
+  --color-trust-ink: #166534;
+  --color-reserved-soft: #fef3c7;
+  --color-reserved-ink: #92400e;
+  --color-action-soft: #e0f2fe;
+  --color-action-ink: #075985;
+
+  /* Destructive actions and form errors (not in DESIGN.md; needed for danger buttons) */
+  --color-danger: #dc2626;
+  --color-danger-dark: #b91c1c;
+  --color-danger-soft: #fef2f2;
+
+  /* ---------- Typography ---------- */
+  --font-*: initial;
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+
+  --text-*: initial;
+  --text-headline-xl: 2.75rem;
+  --text-headline-xl--line-height: 3.25rem;
+  --text-headline-xl--letter-spacing: -0.02em;
+  --text-headline-xl--font-weight: 800;
+  --text-headline-xl-mobile: 1.875rem;
+  --text-headline-xl-mobile--line-height: 2.375rem;
+  --text-headline-xl-mobile--letter-spacing: -0.02em;
+  --text-headline-xl-mobile--font-weight: 800;
+
+  --text-headline-lg: 2rem;
+  --text-headline-lg--line-height: 2.5rem;
+  --text-headline-lg--letter-spacing: -0.015em;
+  --text-headline-lg--font-weight: 700;
+  --text-headline-lg-mobile: 1.5rem;
+  --text-headline-lg-mobile--line-height: 2rem;
+  --text-headline-lg-mobile--letter-spacing: -0.01em;
+  --text-headline-lg-mobile--font-weight: 700;
+
+  --text-headline-md: 1.375rem;
+  --text-headline-md--line-height: 1.875rem;
+  --text-headline-md--font-weight: 700;
+  --text-headline-sm: 1.125rem;
+  --text-headline-sm--line-height: 1.625rem;
+  --text-headline-sm--font-weight: 600;
+
+  --text-body-lg: 1rem;
+  --text-body-lg--line-height: 1.5rem;
+  --text-body-md: 0.875rem;
+  --text-body-md--line-height: 1.25rem;
+  --text-body-sm: 0.75rem;
+  --text-body-sm--line-height: 1.125rem;
+
+  --text-label-lg: 0.875rem;
+  --text-label-lg--line-height: 1.25rem;
+  --text-label-lg--letter-spacing: 0.01em;
+  --text-label-lg--font-weight: 600;
+  --text-label-md: 0.75rem;
+  --text-label-md--line-height: 1rem;
+  --text-label-md--letter-spacing: 0.02em;
+  --text-label-md--font-weight: 600;
+  --text-label-sm: 0.6875rem;
+  --text-label-sm--line-height: 0.875rem;
+  --text-label-sm--letter-spacing: 0.04em;
+  --text-label-sm--font-weight: 700;
+
+  /* ---------- Radius ---------- */
+  --radius-*: initial;
+  --radius-sm: 0.25rem; /* checkbox box */
+  --radius-control: 0.5rem; /* buttons, inputs, selects, dialogs */
+  --radius-card: 1rem; /* cards, containers, sheets */
+  /* chips, pills, badges: rounded-full (built in) */
+
+  /* ---------- Elevation ---------- */
+  --shadow-*: initial;
+  --shadow-level-1: 0 1px 3px 0 rgb(11 37 69 / 0.05), 0 1px 2px -1px rgb(11 37 69 / 0.03);
+  --shadow-level-2: 0 10px 25px -5px rgb(11 37 69 / 0.08), 0 8px 10px -6px rgb(11 37 69 / 0.04);
+  --shadow-level-3: 0 20px 25px -5px rgb(11 37 69 / 0.12), 0 10px 10px -5px rgb(11 37 69 / 0.06);
+  /* Semantic aliases */
+  --shadow-card: var(--shadow-level-1);
+  --shadow-card-hover: var(--shadow-level-2);
+  --shadow-overlay: var(--shadow-level-3);
+
+  /* ---------- Spacing (base unit stays 4px: p-4 = 16px) ---------- */
+  --spacing-space-xs: 0.25rem;
+  --spacing-space-sm: 0.5rem;
+  --spacing-space-md: 1rem;
+  --spacing-space-lg: 1.5rem;
+  --spacing-space-xl: 2.5rem;
+  --spacing-gutter: 1.5rem;
+  --spacing-gutter-mobile: 1rem;
+  --spacing-margin: 2rem;
+  --spacing-margin-mobile: 1rem;
+
+  /* ---------- Layout ---------- */
+  --container-page: 80rem; /* 1280px max container */
+  --breakpoint-lg: 75rem; /* desktop starts at 1200px; md (768px) is tablet */
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-canvas font-sans text-body-md text-chip-ink antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-action;
+  }
+}
+
+/*
+ * Focus treatment for text fields: action-blue border plus the soft
+ * rgba(2,132,199,.15) glow from DESIGN.md.
+ */
+@utility focus-field {
+  &:focus-visible {
+    outline: none;
+    border-color: var(--color-action);
+    box-shadow: 0 0 0 3px var(--color-focus);
+  }
+}
+
+/* Focus treatment for buttons, chips and checkboxes: solid blue ring + glow. */
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--color-action);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 6px var(--color-focus);
+  }
+}

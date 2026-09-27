@@ -1,0 +1,7 @@
+.next
+node_modules
+package-lock.json
+next-env.d.ts
+lib/database.types.ts
+# Hand-written project docs: keep their formatting as authored.
+*.md
