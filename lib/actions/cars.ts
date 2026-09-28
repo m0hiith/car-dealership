@@ -6,7 +6,7 @@ import { requireAdmin } from '@/lib/auth';
 import { CACHE_TAGS } from '@/lib/cache-tags';
 import type { CarStatus } from '@/lib/car-options';
 import { canMoveTo } from '@/lib/car-status';
-import { buildCarSlug, slugify, withSlugSuffix } from '@/lib/slug';
+import { buildCarSlug, carSlugCandidates, randomSlugCode, slugify, withSlugTail } from '@/lib/slug';
 import { getSupabasePublicEnv } from '@/lib/supabase/env';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { carStatusChangeSchema, type CarStatusChange } from '@/lib/validation/admin-cars';
@@ -14,9 +14,9 @@ import {
   carFieldErrors,
   carIdSchema,
   carSaveSchema,
+  newBrandSchema,
   newModelSchema,
   photoPathSchema,
-  slugCheckSchema,
   type CarFieldErrors,
 } from '@/lib/validation/car';
 
@@ -37,6 +37,8 @@ export type SaveCarResult =
   | { ok: true; id: string; slug: string; status: CarStatus; created: boolean }
   | { ok: false; error: string; fieldErrors?: CarFieldErrors };
 
+const FIX_FIELDS = 'Please fix the highlighted fields.';
+
 export async function saveCar(raw: unknown): Promise<SaveCarResult> {
   await requireAdmin();
 
@@ -49,7 +51,7 @@ export async function saveCar(raw: unknown): Promise<SaveCarResult> {
 
   const { data: current, error: loadError } = await supabase
     .from('cars')
-    .select('status, slug')
+    .select('status, slug, published_at')
     .eq('id', car.id)
     .maybeSingle();
   if (loadError) return { ok: false, error: 'Could not save. Check your connection and try again.' };
@@ -58,15 +60,29 @@ export async function saveCar(raw: unknown): Promise<SaveCarResult> {
     return { ok: false, error: 'That status change is not allowed. Reload the page and try again.' };
   }
 
-  let slug = car.slug;
-  if (car.slugAuto) {
-    slug = await findFreeSlug(supabase, car.slug, car.id);
-  } else if (!(await isSlugFree(supabase, car.slug, car.id))) {
-    return {
-      ok: false,
-      error: 'Please fix the highlighted fields.',
-      fieldErrors: { slug: 'Another car already uses this web address. Change it slightly, e.g. add "-2".' },
-    };
+  // The web address is made from the car's details. It follows edits until
+  // the car first goes public, then stays fixed so shared links keep working.
+  let slug: string;
+  if (current?.published_at) {
+    slug = current.slug;
+  } else {
+    const [brand, model] = await Promise.all([
+      supabase.from('brands').select('name').eq('id', car.brandId).maybeSingle(),
+      supabase.from('models').select('name').eq('id', car.modelId).eq('brand_id', car.brandId).maybeSingle(),
+    ]);
+    if (brand.error || model.error) return { ok: false, error: 'Could not save. Check your connection and try again.' };
+    if (!brand.data) return { ok: false, error: FIX_FIELDS, fieldErrors: { brandId: 'Choose a brand.' } };
+    if (!model.data)
+      return { ok: false, error: FIX_FIELDS, fieldErrors: { modelId: 'Choose a model from this brand.' } };
+    const base = buildCarSlug({
+      year: car.year,
+      brand: brand.data.name,
+      model: model.data.name,
+      variant: car.variant,
+      fuelType: car.fuelType,
+      transmission: car.transmission,
+    });
+    slug = await findFreeSlug(supabase, base, car.color, car.id);
   }
 
   const { url } = getSupabasePublicEnv();
@@ -100,11 +116,8 @@ export async function saveCar(raw: unknown): Promise<SaveCarResult> {
 
   if (error) {
     if (error.code === '23505' && error.message.includes('cars_slug_key')) {
-      return {
-        ok: false,
-        error: 'Please fix the highlighted fields.',
-        fieldErrors: { slug: 'Another car already uses this web address.' },
-      };
+      // Another car with the same details was saved at the same moment.
+      return { ok: false, error: 'Could not save just now. Please save again.' };
     }
     if (error.hint === 'car_needs_photo') {
       return {
@@ -134,24 +147,20 @@ export async function saveCar(raw: unknown): Promise<SaveCarResult> {
   return { ok: true, id: car.id, slug, status: car.status, created: !current };
 }
 
-async function isSlugFree(supabase: Client, slug: string, carId: string) {
-  const { count, error } = await supabase
-    .from('cars')
-    .select('id', { count: 'exact', head: true })
-    .eq('slug', slug)
-    .neq('id', carId);
-  if (error) throw new Error(`Could not check the web address: ${error.message}`);
-  return count === 0;
-}
-
-/** The slug itself if free, otherwise the first free "-2", "-3", ... */
-async function findFreeSlug(supabase: Client, slug: string, carId: string) {
-  const { data, error } = await supabase.from('cars').select('slug').like('slug', `${slug}%`).neq('id', carId);
+/**
+ * The first free address for these details: plain, then with the colour,
+ * then with a short random code. Never a running number.
+ */
+async function findFreeSlug(supabase: Client, base: string, colour: string | null, carId: string) {
+  const { data, error } = await supabase.from('cars').select('slug').like('slug', `${base}%`).neq('id', carId);
   if (error) throw new Error(`Could not check the web address: ${error.message}`);
   const taken = new Set(data.map((c) => c.slug));
-  if (!taken.has(slug)) return slug;
-  for (let n = 2; ; n++) {
-    const candidate = withSlugSuffix(slug, n);
+  const candidates = carSlugCandidates(base, colour);
+  const free = candidates.find((c) => !taken.has(c));
+  if (free) return free;
+  const stem = candidates[candidates.length - 1]!;
+  for (;;) {
+    const candidate = withSlugTail(stem, randomSlugCode());
     if (!taken.has(candidate)) return candidate;
   }
 }
@@ -181,15 +190,47 @@ async function removeUnusedPhotos(supabase: Client, carId: string, keep: string[
 }
 
 // ---------------------------------------------------------------------------
-// Slug availability (live check while typing)
+// Add a brand inline
 // ---------------------------------------------------------------------------
 
-export async function checkCarSlug(raw: { slug: string; carId: string }): Promise<{ available: boolean }> {
+export type CreateBrandResult =
+  { ok: true; brand: { id: string; name: string; isActive: boolean } } | { ok: false; error: string };
+
+/**
+ * A brand typed into the car form that is not in the list yet. It shows on
+ * the public site (filters, /cars/brand/...) once a car of it is published.
+ */
+export async function createBrand(raw: { name: string }): Promise<CreateBrandResult> {
   await requireAdmin();
-  const parsed = slugCheckSchema.safeParse(raw);
-  if (!parsed.success) return { available: false };
+  const parsed = newBrandSchema.safeParse(raw);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? 'Enter the brand name.' };
+
+  const name = parsed.data.name.replace(/\s+/g, ' ');
+  const slug = slugify(name);
   const supabase = await createSupabaseServerClient();
-  return { available: await isSlugFree(supabase, parsed.data.slug, parsed.data.carId) };
+
+  // Reuse the existing brand if someone already added it (maybe spelt differently).
+  const existing = await supabase.from('brands').select('id, name, is_active').eq('slug', slug).maybeSingle();
+  if (existing.error) return { ok: false, error: 'Could not add the brand. Please try again.' };
+
+  let brand = existing.data;
+  if (!brand) {
+    const inserted = await supabase.from('brands').insert({ name, slug }).select('id, name, is_active').single();
+    if (inserted.error) return { ok: false, error: 'Could not add the brand. Please try again.' };
+    brand = inserted.data;
+  } else if (!brand.is_active) {
+    const reactivated = await supabase
+      .from('brands')
+      .update({ is_active: true })
+      .eq('id', brand.id)
+      .select('id, name, is_active')
+      .single();
+    if (reactivated.error) return { ok: false, error: 'Could not add the brand. Please try again.' };
+    brand = reactivated.data;
+  }
+
+  updateTag(CACHE_TAGS.brands);
+  return { ok: true, brand: { id: brand.id, name: brand.name, isActive: brand.is_active } };
 }
 
 // ---------------------------------------------------------------------------
@@ -361,6 +402,7 @@ export async function duplicateCar(carId: string): Promise<DuplicateCarResult> {
       fuelType: car.fuel_type,
       transmission: car.transmission,
     }),
+    car.color,
     newId,
   );
 

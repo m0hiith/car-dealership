@@ -1,13 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
-import { Alert, Button, ChoiceChips, Input, Select, Switch, Textarea } from '@/components/ui';
+import { useMemo, useState } from 'react';
+import { Alert, ChoiceChips, Input, Select, Switch, Textarea } from '@/components/ui';
 import { Combobox } from '@/components/ui/combobox';
-import { CheckIcon, Spinner } from '@/components/ui/icons';
 import { useToast } from '@/components/ui/toast';
-import { cn } from '@/lib/cn';
-import { checkCarSlug, createModel, saveCar } from '@/lib/actions/cars';
+import { createBrand, createModel, saveCar } from '@/lib/actions/cars';
 import {
   BODY_TYPE_LABELS,
   BODY_TYPES,
@@ -26,8 +24,7 @@ import {
   type Transmission,
 } from '@/lib/car-options';
 import { formatKm, formatPriceFull, formatPriceLakh } from '@/lib/format';
-import type { CarForEdit, CarFormOptions, ModelOption } from '@/lib/queries/admin-cars';
-import { buildCarSlug, slugify, SLUG_MAX_LENGTH } from '@/lib/slug';
+import type { BrandOption, CarForEdit, CarFormOptions, ModelOption } from '@/lib/queries/admin-cars';
 import {
   carFieldErrors,
   carSaveSchema,
@@ -46,8 +43,6 @@ type Values = {
   brandId: string;
   modelId: string;
   variant: string;
-  slug: string;
-  slugAuto: boolean;
   /** Digits only; shown with Indian grouping. */
   price: string;
   originalPrice: string;
@@ -72,8 +67,6 @@ function initialValues(car: CarForEdit | null): Values {
       brandId: '',
       modelId: '',
       variant: '',
-      slug: '',
-      slugAuto: true,
       price: '',
       originalPrice: '',
       year: '',
@@ -95,9 +88,6 @@ function initialValues(car: CarForEdit | null): Values {
     brandId: car.brandId,
     modelId: car.modelId,
     variant: car.variant ?? '',
-    slug: car.slug,
-    // A saved car keeps its web address unless staff change it on purpose.
-    slugAuto: false,
     price: String(car.price),
     originalPrice: car.originalPrice === null ? '' : String(car.originalPrice),
     year: String(car.year),
@@ -128,7 +118,6 @@ const FIELD_ORDER: CarField[] = [
   'brandId',
   'modelId',
   'variant',
-  'slug',
   'price',
   'originalPrice',
   'year',
@@ -174,8 +163,9 @@ export function CarForm({ carId: initialCarId, car, options }: CarFormProps) {
   const [errors, setErrors] = useState<CarFieldErrors>({});
   const [formError, setFormError] = useState<string>();
   const [pendingTo, setPendingTo] = useState<CarStatus | null>(null);
+  const [brands, setBrands] = useState<BrandOption[]>(options.brands);
+  const [creatingBrand, setCreatingBrand] = useState(false);
   const [creatingModel, setCreatingModel] = useState(false);
-  const [editingSlug, setEditingSlug] = useState(false);
 
   // --- Dirty tracking ------------------------------------------------------
   const snapshot = (v: Values, p: PhotoItem[]) => JSON.stringify([v, p.map((x) => x.path ?? x.key)]);
@@ -189,9 +179,8 @@ export function CarForm({ carId: initialCarId, car, options }: CarFormProps) {
 
   // --- Brand / model -------------------------------------------------------
   const brandOptions = useMemo(
-    () =>
-      options.brands.filter((b) => b.isActive || b.id === values.brandId).map((b) => ({ value: b.id, label: b.name })),
-    [options.brands, values.brandId],
+    () => brands.filter((b) => b.isActive || b.id === values.brandId).map((b) => ({ value: b.id, label: b.name })),
+    [brands, values.brandId],
   );
   const modelOptions = useMemo(
     () =>
@@ -200,44 +189,37 @@ export function CarForm({ carId: initialCarId, car, options }: CarFormProps) {
         .map((m) => ({ value: m.id, label: m.name })),
     [models, values.brandId, values.modelId],
   );
-  const brandName = options.brands.find((b) => b.id === values.brandId)?.name ?? '';
-  const modelName = models.find((m) => m.id === values.modelId)?.name ?? '';
-
-  // --- Slug ----------------------------------------------------------------
-  const suggestedSlug = buildCarSlug({
-    year: toInt(values.year),
-    brand: brandName,
-    model: modelName,
-    variant: values.variant,
-    fuelType: values.fuelType || null,
-    transmission: values.transmission || null,
-  });
-  const slug = values.slugAuto ? suggestedSlug : values.slug;
-  const [slugCheck, setSlugCheck] = useState<{ slug: string; available: boolean } | null>(null);
-  const slugCheckFor = slugCheck?.slug === slug ? slugCheck : null;
-
-  useEffect(() => {
-    if (slug.length < 3 || (car && slug === car.slug)) return;
-    let cancelled = false;
-    const timer = window.setTimeout(async () => {
-      try {
-        const result = await checkCarSlug({ slug, carId });
-        if (!cancelled) setSlugCheck({ slug, available: result.available });
-      } catch {
-        // The save checks again; a failed live check is not worth an error.
-      }
-    }, 400);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [slug, carId, car]);
+  const brandName = brands.find((b) => b.id === values.brandId)?.name ?? '';
 
   // --- Updates -------------------------------------------------------------
   function set<K extends keyof Values>(key: K, value: Values[K]) {
     setValues((v) => ({ ...v, [key]: value }));
     const field = key as CarField;
     if (errors[field]) setErrors((e) => ({ ...e, [field]: undefined }));
+  }
+
+  async function addBrand(name: string) {
+    setCreatingBrand(true);
+    try {
+      const result = await createBrand({ name });
+      if (!result.ok) {
+        setErrors((e) => ({ ...e, brandId: result.error }));
+        return;
+      }
+      const brand = result.brand;
+      setBrands((list) =>
+        list.some((b) => b.id === brand.id)
+          ? list.map((b) => (b.id === brand.id ? brand : b))
+          : [...list, brand].sort((a, b) => a.name.localeCompare(b.name)),
+      );
+      setValues((v) => ({ ...v, brandId: brand.id, modelId: v.brandId === brand.id ? v.modelId : '' }));
+      setErrors((e) => ({ ...e, brandId: undefined }));
+      toast({ tone: 'success', title: `Added ${brand.name}`, description: 'Now type the model name to add it.' });
+    } catch {
+      setErrors((e) => ({ ...e, brandId: 'Could not add the brand. Check your connection and try again.' }));
+    } finally {
+      setCreatingBrand(false);
+    }
   }
 
   async function addModel(name: string) {
@@ -268,8 +250,6 @@ export function CarForm({ carId: initialCarId, car, options }: CarFormProps) {
       brandId: values.brandId,
       modelId: values.modelId,
       variant: values.variant,
-      slug,
-      slugAuto: values.slugAuto,
       // NaN fails validation with the field's own message.
       price: toInt(values.price) ?? Number.NaN,
       originalPrice: toInt(values.originalPrice),
@@ -341,10 +321,7 @@ export function CarForm({ carId: initialCarId, car, options }: CarFormProps) {
 
       setErrors({});
       setStatus(result.status);
-      const savedValues = { ...values, slug: result.slug, slugAuto: false };
-      setValues(savedValues);
-      setSavedSnapshot(snapshot(savedValues, photos));
-      setEditingSlug(false);
+      setSavedSnapshot(snapshot(values, photos));
       toast({ tone: 'success', title: savedMessage(before, result.status) });
 
       if (result.created) router.replace(`/admin/cars/${result.id}/edit`);
@@ -375,20 +352,25 @@ export function CarForm({ carId: initialCarId, car, options }: CarFormProps) {
             id={fieldId('brandId')}
             label="Brand"
             required
-            placeholder="Search brands"
+            placeholder="Search or type a brand"
             options={brandOptions}
             value={values.brandId}
             onChange={(id) => {
               setValues((v) => ({ ...v, brandId: id, modelId: v.brandId === id ? v.modelId : '' }));
               setErrors((e) => ({ ...e, brandId: undefined }));
             }}
+            onCreate={addBrand}
+            creating={creatingBrand}
+            createLabel={(q) => `Add “${q}” as a new brand`}
+            emptyText="Type the brand name to add it"
+            hint="Not in the list? Type the name and choose Add."
             error={errors.brandId}
           />
           <Combobox
             id={fieldId('modelId')}
             label="Model"
             required
-            placeholder={values.brandId ? 'Search models' : 'Choose a brand first'}
+            placeholder={values.brandId ? 'Search or type a model' : 'Choose a brand first'}
             disabled={!values.brandId}
             options={modelOptions}
             value={values.modelId}
@@ -397,6 +379,7 @@ export function CarForm({ carId: initialCarId, car, options }: CarFormProps) {
             creating={creatingModel}
             createLabel={(q) => `Add “${q}” as a new ${brandName} model`}
             emptyText="Type the model name to add it"
+            hint={values.brandId ? 'Not in the list? Type the name and choose Add.' : undefined}
             error={errors.modelId}
           />
         </div>
@@ -409,29 +392,6 @@ export function CarForm({ carId: initialCarId, car, options }: CarFormProps) {
           value={values.variant}
           onChange={(e) => set('variant', e.target.value)}
           error={errors.variant}
-        />
-        <SlugField
-          slug={slug}
-          editing={editingSlug || !values.slugAuto}
-          auto={values.slugAuto}
-          savedSlug={car?.slug ?? null}
-          canSuggest={suggestedSlug.length >= 3 && suggestedSlug !== values.slug}
-          check={slugCheckFor}
-          // An automatic address only errors while it is still empty; it clears as details are filled in.
-          error={values.slugAuto && slug.length >= 3 ? undefined : errors.slug}
-          onEdit={() => {
-            setEditingSlug(true);
-            setValues((v) => ({ ...v, slug, slugAuto: false }));
-          }}
-          onChange={(text) => {
-            setValues((v) => ({ ...v, slug: text, slugAuto: false }));
-            setErrors((e) => ({ ...e, slug: undefined }));
-          }}
-          onUseSuggested={() => {
-            setEditingSlug(false);
-            setValues((v) => ({ ...v, slugAuto: true }));
-            setErrors((e) => ({ ...e, slug: undefined }));
-          }}
         />
       </FormSection>
 
@@ -659,109 +619,4 @@ function savedMessage(before: CarStatus | null, after: CarStatus) {
     case 'archived':
       return 'Archived';
   }
-}
-
-function SlugField({
-  slug,
-  editing,
-  auto,
-  savedSlug,
-  canSuggest,
-  check,
-  error,
-  onEdit,
-  onChange,
-  onUseSuggested,
-}: {
-  slug: string;
-  editing: boolean;
-  auto: boolean;
-  savedSlug: string | null;
-  canSuggest: boolean;
-  check: { available: boolean } | null;
-  error?: string;
-  onEdit: () => void;
-  onChange: (slug: string) => void;
-  onUseSuggested: () => void;
-}) {
-  const unchanged = savedSlug !== null && slug === savedSlug;
-  let status: React.ReactNode = null;
-  if (slug.length >= 3 && !unchanged && !error) {
-    if (!check) {
-      status = (
-        <span className="inline-flex items-center gap-1 text-muted">
-          <Spinner width={12} height={12} /> Checking…
-        </span>
-      );
-    } else if (check.available) {
-      status = (
-        <span className="inline-flex items-center gap-1 text-action-ink">
-          <CheckIcon width={14} height={14} /> Available
-        </span>
-      );
-    } else {
-      status = (
-        <span className="text-reserved-ink">
-          {auto
-            ? 'Another car has this address; a number will be added when you save.'
-            : 'Another car already uses this address.'}
-        </span>
-      );
-    }
-  }
-
-  if (!editing) {
-    return (
-      // Focus target for the error summary; the address itself is not editable here.
-      <div id={fieldId('slug')} tabIndex={-1} className="flex flex-col gap-1.5 outline-none">
-        <span className="text-label-lg text-navy">Web address</span>
-        <div
-          className={cn(
-            'flex flex-wrap items-center gap-x-3 gap-y-1 rounded-control border bg-chip px-3 py-2.5',
-            error ? 'border-danger' : 'border-transparent',
-          )}
-        >
-          <code className="min-w-0 flex-1 text-body-md break-all text-chip-ink">
-            /cars/{slug || <span className="text-muted">fills in as you type</span>}
-          </code>
-          <Button size="sm" variant="ghost" onClick={onEdit} disabled={!slug} className="bg-card">
-            Edit
-          </Button>
-        </div>
-        <p className="text-body-sm">
-          {error ? (
-            <span className="font-medium text-danger">Fills in once you choose the year, brand and model.</span>
-          ) : (
-            (status ?? <span className="text-muted">Created automatically from the details above.</span>)
-          )}
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      <Input
-        id={fieldId('slug')}
-        label="Web address"
-        value={slug}
-        maxLength={SLUG_MAX_LENGTH}
-        autoCapitalize="none"
-        autoComplete="off"
-        spellCheck={false}
-        onChange={(e) => onChange(e.target.value.toLowerCase().replace(/\s+/g, '-'))}
-        onBlur={(e) => onChange(slugify(e.target.value))}
-        error={error}
-        hint={savedSlug && slug !== savedSlug ? 'Changing this breaks links people have already shared.' : undefined}
-      />
-      <div className="flex flex-wrap items-center justify-between gap-2 text-body-sm">
-        <span>{status}</span>
-        {canSuggest && (
-          <Button size="sm" variant="ghost" onClick={onUseSuggested}>
-            Use suggested address
-          </Button>
-        )}
-      </div>
-    </div>
-  );
 }

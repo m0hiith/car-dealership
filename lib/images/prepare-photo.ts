@@ -11,10 +11,10 @@ const WEBP_QUALITY = 0.82;
 
 export class PhotoError extends Error {}
 
-export async function preparePhoto(file: File): Promise<Blob> {
+export async function preparePhoto(file: File, { maxEdge = MAX_EDGE }: { maxEdge?: number } = {}): Promise<Blob> {
   const source = await decode(file);
   try {
-    const scale = Math.min(1, MAX_EDGE / Math.max(source.width, source.height));
+    const scale = Math.min(1, maxEdge / Math.max(source.width, source.height));
     const width = Math.max(1, Math.round(source.width * scale));
     const height = Math.max(1, Math.round(source.height * scale));
 
@@ -72,12 +72,18 @@ function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number) 
 
 /**
  * Uploads to a Supabase signed upload URL with XHR, because fetch cannot
- * report upload progress.
+ * report upload progress. Also used for site-media videos, which are sent
+ * as they are.
  */
 export function uploadPhoto(
   signedUrl: string,
   blob: Blob,
-  { anonKey, onProgress, signal }: { anonKey: string; onProgress: (fraction: number) => void; signal?: AbortSignal },
+  {
+    anonKey,
+    onProgress,
+    signal,
+    fileName = 'photo.webp',
+  }: { anonKey: string; onProgress: (fraction: number) => void; signal?: AbortSignal; fileName?: string },
 ) {
   return new Promise<void>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -98,7 +104,7 @@ export function uploadPhoto(
     const body = new FormData();
     // File names are random UUIDs and never reused, so they can be cached for a year.
     body.append('cacheControl', '31536000');
-    body.append('', blob, 'photo.webp');
+    body.append('', blob, fileName);
     xhr.send(body);
   });
 }

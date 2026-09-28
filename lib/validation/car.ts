@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { BODY_TYPES, CAR_STATUSES, FUEL_TYPES, MIN_CAR_YEAR, TRANSMISSIONS } from '@/lib/car-options';
 import { isPublicStatus } from '@/lib/car-status';
-import { SLUG_MAX_LENGTH, SLUG_PATTERN } from '@/lib/slug';
 
 /**
  * Add/Edit car. Shared by the form (inline errors before submitting) and the
@@ -28,13 +27,6 @@ const optionalText = (max: number, label: string) =>
 
 export const photoPathSchema = z.string().regex(/^[0-9a-f-]{36}\/[0-9a-f-]{36}\.webp$/, { error: 'Invalid photo.' });
 
-export const carSlugSchema = z
-  .string()
-  .trim()
-  .min(3, { error: 'Enter a web address for this car.' })
-  .max(SLUG_MAX_LENGTH, { error: `Keep the web address under ${SLUG_MAX_LENGTH} characters.` })
-  .regex(SLUG_PATTERN, { error: 'Use only lowercase letters, numbers and single hyphens.' });
-
 export const carSaveSchema = z
   .object({
     id: z.uuid(),
@@ -43,9 +35,6 @@ export const carSaveSchema = z
     brandId: z.uuid({ error: 'Choose a brand.' }),
     modelId: z.uuid({ error: 'Choose a model.' }),
     variant: optionalText(80, 'Variant'),
-    slug: carSlugSchema,
-    /** True while the slug is still the auto-generated one; the server may then add "-2" to make it unique. */
-    slugAuto: z.boolean(),
     price: z
       .int({ error: 'Enter the selling price in rupees.' })
       .positive({ error: 'Enter the selling price in rupees.' })
@@ -140,7 +129,14 @@ export const newModelSchema = z.object({
     .regex(/[a-z0-9]/i, { error: 'Enter the model name.' }),
 });
 
-export const slugCheckSchema = z.object({ slug: carSlugSchema, carId: z.uuid() });
+export const newBrandSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, { error: 'Enter the brand name.' })
+    .max(60, { error: 'Keep the brand name under 60 characters.' })
+    .regex(/[a-z0-9]/i, { error: 'Enter the brand name.' }),
+});
 
 export const carIdSchema = z.uuid();
 

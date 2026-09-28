@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { airbagsFeature, parseAirbagsFeature } from '@/lib/car-options';
 import { canMoveTo } from '@/lib/car-status';
-import { buildCarSlug, slugify, withSlugSuffix } from '@/lib/slug';
+import { buildCarSlug, carSlugCandidates, randomSlugCode, slugify, withSlugTail } from '@/lib/slug';
 import { carFieldErrors, carSaveSchema, photoFileSchema, type CarSaveInput } from '@/lib/validation/car';
 
 describe('slugify', () => {
@@ -56,12 +56,31 @@ describe('buildCarSlug', () => {
   });
 });
 
-describe('withSlugSuffix', () => {
-  it('appends a number and keeps the length limit', () => {
-    expect(withSlugSuffix('2023-bmw-x1', 2)).toBe('2023-bmw-x1-2');
+describe('carSlugCandidates', () => {
+  it('tries the details alone, then with the colour, never a number', () => {
+    expect(carSlugCandidates('2021-maruti-suzuki-swift-vxi-petrol-manual', 'Pearl White')).toEqual([
+      '2021-maruti-suzuki-swift-vxi-petrol-manual',
+      '2021-maruti-suzuki-swift-vxi-petrol-manual-pearl-white',
+    ]);
+    expect(carSlugCandidates('2023-bmw-x1', null)).toEqual(['2023-bmw-x1']);
+    expect(carSlugCandidates('2023-bmw-x1', ' ')).toEqual(['2023-bmw-x1']);
+  });
+});
+
+describe('withSlugTail', () => {
+  it('appends and keeps the length limit', () => {
+    expect(withSlugTail('2023-bmw-x1', 'red')).toBe('2023-bmw-x1-red');
     const long = 'a'.repeat(120);
-    expect(withSlugSuffix(long, 12)).toHaveLength(120);
-    expect(withSlugSuffix(long, 12).endsWith('-12')).toBe(true);
+    expect(withSlugTail(long, 'k7p2')).toHaveLength(120);
+    expect(withSlugTail(long, 'k7p2').endsWith('-k7p2')).toBe(true);
+  });
+});
+
+describe('randomSlugCode', () => {
+  it('is 4 easy-to-read characters', () => {
+    for (let i = 0; i < 50; i++) expect(randomSlugCode()).toMatch(/^[a-hjkmnp-z2-9]{4}$/);
+    expect(randomSlugCode(() => 0)).toBe('aaaa');
+    expect(randomSlugCode(() => 0.9999)).toBe('9999');
   });
 });
 
@@ -102,8 +121,6 @@ function validCar(overrides: Partial<CarSaveInput> = {}): CarSaveInput {
     brandId: '9b2e8c1a-1d2f-4a3b-8c4d-5e6f7a8b9c0d',
     modelId: '1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d',
     variant: 'sDrive18i',
-    slug: '2023-bmw-x1-sdrive18i-petrol-automatic',
-    slugAuto: true,
     price: 4_200_000,
     originalPrice: null,
     year: 2023,
@@ -166,11 +183,9 @@ describe('carSaveSchema', () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects another car's photo paths and bad slugs", () => {
+  it("rejects another car's photo paths", () => {
     const other = '11111111-2222-4333-8444-555555555555/0b8a1f2e-3c4d-4e5f-8a9b-0c1d2e3f4a5b.webp';
     expect(carSaveSchema.safeParse(validCar({ photos: [other] })).success).toBe(false);
-    expect(carSaveSchema.safeParse(validCar({ slug: 'Has Spaces' })).success).toBe(false);
-    expect(carSaveSchema.safeParse(validCar({ slug: 'double--hyphen' })).success).toBe(false);
   });
 });
 

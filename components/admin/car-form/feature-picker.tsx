@@ -89,7 +89,7 @@ export function FeaturePicker({
               <Input
                 id="car-custom-feature"
                 label="Other feature"
-                placeholder="e.g. Ambient Lighting"
+                placeholder="Type your own, e.g. Ambient Lighting"
                 value={draft}
                 maxLength={60}
                 onChange={(e) => {
