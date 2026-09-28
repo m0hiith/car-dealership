@@ -79,12 +79,9 @@ Add more staff the same way with `role` set to `'admin'`. To revoke access, dele
 
 `select public.is_admin()` in the SQL Editor always returns `false`, because the editor isn't signed in as a user. The real check happens when you sign in to `/admin` (phase 3).
 
-## 7. Dealership details (until the Settings page exists)
+## 7. Dealership details
 
-The migration creates `site_settings` with the placeholder name "Dealership name". Until `/admin/settings` is built in phase 8:
-
-1. **Storage → site-media → Upload** `logo.jpg` and copy its public URL.
-2. **Table Editor → site_settings**: set `dealership_name`, `logo_url`, `phone`, `whatsapp_number`, `address`, `map_url` and `business_hours`.
+Sign in to `/admin` and fill in **Settings** (name, logo, phone, WhatsApp, address, map link, hours, socials) and **Homepage Content** (hero, Why Choose Us, video, About page). Changes appear on the public site straight away.
 
 ## 8. Before launch: remove the sample cars
 

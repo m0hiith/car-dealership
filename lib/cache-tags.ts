@@ -9,6 +9,10 @@ export const CACHE_TAGS = {
   brands: 'brands',
   /** site_settings: dealership name, logo and contact details. */
   settings: 'settings',
+  /** homepage_content: hero, Why Choose Us, dealership video, About page copy. */
+  content: 'content',
+  /** Published testimonials. */
+  testimonials: 'testimonials',
   /** One car's detail page. */
   car: (slug: string) => `car:${slug}`,
 } as const;

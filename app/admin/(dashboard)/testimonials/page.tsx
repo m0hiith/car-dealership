@@ -1,8 +1,12 @@
 import type { Metadata } from 'next';
-import { ComingSoon } from '@/components/admin/coming-soon';
+import { TestimonialsManager } from '@/components/admin/content/testimonials-manager';
+import { requireAdmin } from '@/lib/auth';
+import { getAdminTestimonials } from '@/lib/queries/admin-content';
 
 export const metadata: Metadata = { title: 'Testimonials' };
 
-export default function Page() {
-  return <ComingSoon title="Testimonials" phase={8} />;
+export default async function TestimonialsPage() {
+  await requireAdmin();
+  const testimonials = await getAdminTestimonials();
+  return <TestimonialsManager testimonials={testimonials} />;
 }

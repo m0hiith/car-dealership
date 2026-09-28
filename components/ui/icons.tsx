@@ -290,3 +290,81 @@ export function MailIcon(props: IconProps) {
     </svg>
   );
 }
+
+export function MapPinIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  );
+}
+
+export function ClockIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 6v6l4 2" />
+    </svg>
+  );
+}
+
+export function ArrowRightIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M5 12h14M12 5l7 7-7 7" />
+    </svg>
+  );
+}
+
+export function ArrowUpIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M12 19V5M5 12l7-7 7 7" />
+    </svg>
+  );
+}
+
+export function ArrowDownIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M12 5v14M19 12l-7 7-7-7" />
+    </svg>
+  );
+}
+
+export function VideoIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="m22 8-6 4 6 4V8z" />
+      <rect x="2" y="6" width="14" height="12" rx="2" />
+    </svg>
+  );
+}
+
+export function InstagramIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <rect x="2" y="2" width="20" height="20" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <path d="M17.5 6.5h.01" />
+    </svg>
+  );
+}
+
+export function FacebookIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+    </svg>
+  );
+}
+
+export function YoutubeIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M2.5 17a24 24 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.6 49.6 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24 24 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.6 49.6 0 0 1-16.2 0A2 2 0 0 1 2.5 17" />
+      <path d="m10 15 5-3-5-3z" />
+    </svg>
+  );
+}

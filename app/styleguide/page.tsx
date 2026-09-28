@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 import {
   Badge,
@@ -16,7 +17,8 @@ import { SearchIcon } from '@/components/ui/icons';
 import { formatKm, formatPriceFull, formatPriceLakh } from '@/lib/format';
 import { BottomSheetDemo, ChipDemo, LoadingButtonDemo, ModalDemo, ToastDemo } from './demos';
 
-// Temporary review page for phase 1. Delete before launch.
+// Design reference, not part of the product. 404s in production (see the
+// NODE_ENV check below); noindex here covers `next dev` too.
 export const metadata: Metadata = {
   title: 'Styleguide',
   robots: { index: false, follow: false },
@@ -84,6 +86,10 @@ function Label({ children }: { children: ReactNode }) {
 const nav = ['colours', 'type', 'shape', 'buttons', 'forms', 'badges', 'cards', 'feedback', 'overlays'];
 
 export default function StyleguidePage() {
+  // Design reference only: available in `next dev`, 404s in any built app
+  // (so it never ships on Vercel, preview or production).
+  if (process.env.NODE_ENV === 'production') notFound();
+
   return (
     <div className="flex-1">
       <header className="sticky top-0 z-10 bg-navy text-white shadow-overlay">
