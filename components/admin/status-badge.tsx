@@ -1,8 +1,8 @@
 import { Badge, type BadgeTone } from '@/components/ui';
 import type { Database } from '@/lib/database.types';
+import { LEAD_STATUS_LABELS, type LeadStatus } from '@/lib/lead-status';
 
 type CarStatus = Database['public']['Enums']['car_status'];
-type LeadStatus = Database['public']['Enums']['lead_status'];
 
 // Amber is reserved for Reserved; green is never used for workflow states (CLAUDE.md §4).
 const carStatus: Record<CarStatus, { label: string; tone: BadgeTone }> = {
@@ -13,28 +13,18 @@ const carStatus: Record<CarStatus, { label: string; tone: BadgeTone }> = {
   archived: { label: 'Archived', tone: 'neutral' },
 };
 
-const leadStatus: Record<LeadStatus, { label: string; tone: BadgeTone }> = {
-  new: { label: 'New', tone: 'blue' },
-  contacted: { label: 'Contacted', tone: 'neutral' },
-  test_drive: { label: 'Test drive', tone: 'neutral' },
-  negotiation: { label: 'Negotiation', tone: 'neutral' },
-  closed: { label: 'Closed', tone: 'neutral' },
-  lost: { label: 'Lost', tone: 'neutral' },
-};
-
-export function CarStatusBadge({ status }: { status: CarStatus }) {
-  const { label, tone } = carStatus[status];
+export function LeadStatusBadge({ status }: { status: LeadStatus }) {
   return (
-    <Badge tone={tone} dot>
-      {label}
+    <Badge tone={status === 'new' ? 'blue' : 'neutral'} dot>
+      {LEAD_STATUS_LABELS[status]}
     </Badge>
   );
 }
 
-export function LeadStatusBadge({ status }: { status: LeadStatus }) {
-  const { label, tone } = leadStatus[status];
+export function CarStatusBadge({ status }: { status: CarStatus }) {
+  const { label, tone } = carStatus[status];
   return (
-    <Badge tone={tone} dot>
+    <Badge tone={tone} dot data-testid="car-status">
       {label}
     </Badge>
   );

@@ -224,6 +224,8 @@ export type Database = {
       }
       homepage_content: {
         Row: {
+          about_body: string | null
+          about_title: string | null
           cta_link: string | null
           cta_text: string | null
           hero_description: string | null
@@ -236,6 +238,8 @@ export type Database = {
           why_us: Json
         }
         Insert: {
+          about_body?: string | null
+          about_title?: string | null
           cta_link?: string | null
           cta_text?: string | null
           hero_description?: string | null
@@ -248,6 +252,8 @@ export type Database = {
           why_us?: Json
         }
         Update: {
+          about_body?: string | null
+          about_title?: string | null
           cta_link?: string | null
           cta_text?: string | null
           hero_description?: string | null
@@ -260,6 +266,41 @@ export type Database = {
           why_us?: Json
         }
         Relationships: []
+      }
+      lead_notes: {
+        Row: {
+          author_email: string | null
+          author_id: string | null
+          body: string
+          created_at: string
+          id: string
+          lead_id: string
+        }
+        Insert: {
+          author_email?: string | null
+          author_id?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          lead_id: string
+        }
+        Update: {
+          author_email?: string | null
+          author_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          lead_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_notes_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lead_rate_limits: {
         Row: {
@@ -444,6 +485,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_lead_car_options: {
+        Args: never
+        Returns: {
+          id: string
+          lead_count: number
+          status: Database["public"]["Enums"]["car_status"]
+          title: string
+          variant: string
+        }[]
+      }
       filter_public_cars: {
         Args: { p_filters: Json }
         Returns: {
@@ -494,6 +545,7 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       jsonb_text_array: { Args: { p: Json }; Returns: string[] }
+      public_browse_options: { Args: never; Returns: Json }
       public_car_facets: { Args: { p_filters: Json }; Returns: Json }
       save_car: {
         Args: {

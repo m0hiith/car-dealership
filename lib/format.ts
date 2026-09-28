@@ -61,3 +61,46 @@ export function formatDate(value: Date | string): string {
   if (Number.isNaN(date.getTime())) throw new RangeError(`Invalid date: ${String(value)}`);
   return dateFormatter.format(date);
 }
+
+const KOLKATA = 'Asia/Kolkata';
+const timeFormatter = new Intl.DateTimeFormat('en-IN', {
+  timeZone: KOLKATA,
+  hour: 'numeric',
+  minute: '2-digit',
+  hour12: true,
+});
+const weekdayFormatter = new Intl.DateTimeFormat('en-IN', { timeZone: KOLKATA, weekday: 'short' });
+const dayMonthFormatter = new Intl.DateTimeFormat('en-IN', { timeZone: KOLKATA, day: 'numeric', month: 'short' });
+const dayKeyFormatter = new Intl.DateTimeFormat('en-CA', {
+  timeZone: KOLKATA,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+/** Days since 1970 of the Asia/Kolkata calendar date, so "yesterday" follows India's midnight. */
+function kolkataDay(date: Date) {
+  return Date.parse(`${dayKeyFormatter.format(date)}T00:00:00Z`) / 86_400_000;
+}
+
+/**
+ * Friendly timestamp in Asia/Kolkata for lists such as leads:
+ * "Today 8:42 PM", "Yesterday 8:42 PM", "Mon 8:42 PM" (this week),
+ * "26 Sept, 8:42 PM" (this year), else "26 Sept 2025".
+ */
+export function formatRelativeDateTime(value: Date | string, now: Date | number = Date.now()): string {
+  const date = typeof value === 'string' ? new Date(value) : value;
+  if (Number.isNaN(date.getTime())) throw new RangeError(`Invalid date: ${String(value)}`);
+  const today = new Date(now);
+  const days = kolkataDay(today) - kolkataDay(date);
+  // en-IN writes "pm"; show "PM".
+  const time = timeFormatter.format(date).replace(/\s?([ap])m$/i, (_, p: string) => ` ${p.toUpperCase()}M`);
+
+  if (days === 0) return `Today ${time}`;
+  if (days === 1) return `Yesterday ${time}`;
+  if (days > 1 && days < 7) return `${weekdayFormatter.format(date)} ${time}`;
+  if (dayKeyFormatter.format(date).slice(0, 4) === dayKeyFormatter.format(today).slice(0, 4)) {
+    return `${dayMonthFormatter.format(date)}, ${time}`;
+  }
+  return formatDate(date);
+}

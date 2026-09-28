@@ -3,8 +3,11 @@
 import { createHash } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
+import { after } from 'next/server';
 import { z } from 'zod';
+import { sendNewLeadEmail } from '@/lib/notifications/lead-email';
 import { getPublicCarBySlug } from '@/lib/queries/car-detail';
+import { getSiteSettings } from '@/lib/queries/settings';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import { createSupabasePublicClient } from '@/lib/supabase/public';
 import { HONEYPOT_FIELD, leadSchema, type LeadField } from '@/lib/validation/lead';
@@ -120,6 +123,20 @@ export async function submitLead(_prev: LeadFormState, formData: FormData): Prom
     console.error('Lead insert failed', { code: error.code, message: error.message });
     return { status: 'error', error: 'Could not send your enquiry. Please try again, or call or WhatsApp us.', values };
   }
+
+  // Owner email (only if configured), after the response so the visitor never waits for it.
+  after(async () => {
+    const { dealershipName } = await getSiteSettings();
+    await sendNewLeadEmail({
+      dealershipName,
+      name: lead.name,
+      phone: lead.phone,
+      email: lead.email,
+      preferredTime: lead.preferredTime,
+      message,
+      car: car ? { title: [car.title, car.variant].filter(Boolean).join(' '), slug: car.slug } : null,
+    });
+  });
 
   // New-lead count in the admin sidebar and overview.
   revalidatePath('/admin', 'layout');
