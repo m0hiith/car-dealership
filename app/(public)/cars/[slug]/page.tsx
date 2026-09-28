@@ -11,11 +11,12 @@ import { SpecChips } from '@/components/cars/spec-chips';
 import { Description, FeatureList, VehicleDetails } from '@/components/cars/vehicle-details';
 import { StickyCtaBar } from '@/components/layout/sticky-cta-bar';
 import { EnquiryProvider } from '@/components/leads/enquiry';
+import { CarJsonLd } from '@/components/seo/car-json-ld';
 import { Card } from '@/components/ui';
 import { ChevronRightIcon } from '@/components/ui/icons';
 import { carBadges } from '@/lib/car-badges';
 import { carEnquiryMessage, carFollowUpMessage, carWhatsappMessage } from '@/lib/car-enquiry';
-import { FUEL_LABELS, isAutomatic } from '@/lib/car-options';
+import { carSeoTitle, FUEL_LABELS, isAutomatic } from '@/lib/car-options';
 import { telHref, whatsappHref } from '@/lib/contact';
 import { formatKm, formatPriceFull, formatPriceLakh } from '@/lib/format';
 import { getPublicCarBySlug, getSimilarCars, getUnavailableCar } from '@/lib/queries/car-detail';
@@ -41,7 +42,7 @@ async function readSlug(params: Promise<{ slug: string }>) {
 
 export async function generateMetadata({ params }: PageProps<'/cars/[slug]'>): Promise<Metadata> {
   const slug = await readSlug(params);
-  const car = await getPublicCarBySlug(slug);
+  const [car, settings] = await Promise.all([getPublicCarBySlug(slug), getSiteSettings()]);
   if (!car) {
     const gone = await getUnavailableCar(slug);
     return gone ? { title: `${gone.title} (no longer available)`, robots: { index: false } } : {};
@@ -53,13 +54,28 @@ export async function generateMetadata({ params }: PageProps<'/cars/[slug]'>): P
     FUEL_LABELS[car.fuelType],
     isAutomatic(car.transmission) ? 'Automatic' : 'Manual',
   ].join(', ');
+  const title = carSeoTitle({
+    name,
+    variant: car.variant,
+    fuelType: car.fuelType,
+    transmission: car.transmission,
+    city: car.registrationCity,
+  });
   const description = `Used ${name} for ${formatPriceLakh(car.price)}: ${specs}. See photos and full details, and enquire today.`;
   const cover = car.photos[0]?.url;
   return {
-    title: `${name} for sale`,
+    title,
     description,
     alternates: { canonical: `/cars/${car.slug}` },
-    openGraph: { title: name, description, url: `/cars/${car.slug}`, images: cover ? [{ url: cover }] : undefined },
+    openGraph: {
+      siteName: settings.dealershipName,
+      locale: 'en_IN',
+      type: 'website',
+      title: name,
+      description,
+      url: `/cars/${car.slug}`,
+      images: cover ? [{ url: cover }] : undefined,
+    },
   };
 }
 
@@ -94,6 +110,7 @@ export default async function CarDetailPage({ params }: PageProps<'/cars/[slug]'
         whatsappHref: whatsappHref(settings.whatsappNumber, carFollowUpMessage(car, url)),
       }}
     >
+      <CarJsonLd car={car} />
       <div className="mx-auto flex w-full max-w-page flex-col gap-6 px-4 py-4 md:gap-8 md:px-6 md:py-8">
         <nav aria-label="Breadcrumb">
           <ol className="flex flex-wrap items-center gap-1 text-body-md text-muted">

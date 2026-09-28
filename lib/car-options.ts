@@ -39,6 +39,35 @@ export function isAutomatic(transmission: Transmission) {
   return transmission !== 'manual';
 }
 
+const GEARBOX_WORD_PATTERN = /\b(AT|MT|CVT|AMT|DCT|IVT|Automatic|Manual)\b/i;
+
+/**
+ * SEO title for a car detail page: "<name> Petrol AT for sale in Hyderabad"
+ * (PRODUCT_SPEC §14). Indian trim names often already say the fuel or
+ * gearbox ("SX (O) 1.5 Diesel AT"), so those are skipped rather than
+ * repeated.
+ */
+export function carSeoTitle({
+  name,
+  variant,
+  fuelType,
+  transmission,
+  city,
+}: {
+  name: string;
+  variant: string | null;
+  fuelType: FuelType;
+  transmission: Transmission;
+  city: string | null;
+}): string {
+  const fuel = FUEL_LABELS[fuelType];
+  const gearbox = isAutomatic(transmission) ? 'AT' : 'MT';
+  const hasFuel = variant ? new RegExp(`\\b${fuel}\\b`, 'i').test(variant) : false;
+  const hasGearbox = variant ? GEARBOX_WORD_PATTERN.test(variant) : false;
+  const suffix = [!hasFuel && fuel, !hasGearbox && gearbox].filter((part): part is string => Boolean(part));
+  return `${[name, ...suffix].join(' ')} for sale${city ? ` in ${city}` : ''}`;
+}
+
 export const BODY_TYPE_LABELS: Record<BodyType, string> = {
   hatchback: 'Hatchback',
   sedan: 'Sedan',
