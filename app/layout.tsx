@@ -19,7 +19,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="en-IN" className={`${jakarta.variable} h-full`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+      {/* Browser extensions (e.g. Grammarly) add attributes to <body> before React hydrates. */}
+      <body className="flex min-h-full flex-col" suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }
