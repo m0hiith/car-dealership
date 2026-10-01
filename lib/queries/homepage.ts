@@ -17,6 +17,8 @@ export type HomepageContent = {
   cta: { text: string; href: string } | null;
   whyUs: WhyUsItem[];
   videoUrl: string | null;
+  testimonialVideos: string[];
+  socialVideos: string[];
   aboutTitle: string | null;
   aboutBody: string | null;
 };
@@ -27,7 +29,7 @@ export const getHomepageContent = unstable_cache(
     const { data, error } = await supabase
       .from('homepage_content')
       .select(
-        'hero_title, hero_description, hero_media_url, hero_media_type, cta_text, cta_link, why_us, video_url, about_title, about_body',
+        'hero_title, hero_description, hero_media_url, hero_media_type, cta_text, cta_link, why_us, video_url, testimonial_videos, social_videos, about_title, about_body',
       )
       .eq('id', 1)
       .maybeSingle();
@@ -41,12 +43,14 @@ export const getHomepageContent = unstable_cache(
       cta: data?.cta_text && data.cta_link ? { text: data.cta_text, href: data.cta_link } : null,
       whyUs: parseWhyUs(data?.why_us),
       videoUrl: data?.video_url ?? null,
+      testimonialVideos: data?.testimonial_videos ?? [],
+      socialVideos: data?.social_videos ?? [],
       aboutTitle: data?.about_title ?? null,
       aboutBody: data?.about_body ?? null,
     };
   },
   ['homepage-content'],
-  { tags: [CACHE_TAGS.content] },
+  { revalidate: 3600, tags: [CACHE_TAGS.content] },
 );
 
 export const FEATURED_CARS_LIMIT = 6;

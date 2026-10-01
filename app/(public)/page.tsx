@@ -5,6 +5,7 @@ import { ContactSection } from '@/components/home/contact-block';
 import { DealershipVideo } from '@/components/home/dealership-video';
 import { FeaturedCars } from '@/components/home/featured-cars';
 import { Hero } from '@/components/home/hero';
+import { SocialVideos } from '@/components/home/social-videos';
 import { Testimonials } from '@/components/home/testimonials';
 import { WhyChooseUs } from '@/components/home/why-choose-us';
 import { AutoDealerJsonLd } from '@/components/seo/auto-dealer-json-ld';
@@ -55,9 +56,10 @@ export default async function HomePage() {
       <BrowseByBodyType counts={browse.bodyTypeCounts} />
       <BrowseByBudget />
       <FeaturedCars cars={homeCars.cars} featured={homeCars.featured} now={getRequestTime()} />
+      <SocialVideos urls={content.socialVideos} />
       <WhyChooseUs items={content.whyUs} />
       <DealershipVideo url={content.videoUrl} dealershipName={settings.dealershipName} />
-      <Testimonials testimonials={testimonials} />
+      <Testimonials testimonials={testimonials} videos={content.testimonialVideos} />
       <ContactSection settings={settings} />
     </>
   );

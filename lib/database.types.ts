@@ -233,6 +233,8 @@ export type Database = {
           hero_media_url: string | null
           hero_title: string
           id: number
+          social_videos: string[]
+          testimonial_videos: string[]
           updated_at: string
           video_url: string | null
           why_us: Json
@@ -247,6 +249,8 @@ export type Database = {
           hero_media_url?: string | null
           hero_title: string
           id?: number
+          social_videos?: string[]
+          testimonial_videos?: string[]
           updated_at?: string
           video_url?: string | null
           why_us?: Json
@@ -261,6 +265,8 @@ export type Database = {
           hero_media_url?: string | null
           hero_title?: string
           id?: number
+          social_videos?: string[]
+          testimonial_videos?: string[]
           updated_at?: string
           video_url?: string | null
           why_us?: Json

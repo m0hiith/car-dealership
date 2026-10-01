@@ -368,3 +368,21 @@ export function YoutubeIcon(props: IconProps) {
     </svg>
   );
 }
+
+export function VolumeIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M11 5 6 9H2v6h4l5 4V5Z" />
+      <path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" />
+    </svg>
+  );
+}
+
+export function VolumeOffIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M11 5 6 9H2v6h4l5 4V5Z" />
+      <path d="m22 9-6 6M16 9l6 6" />
+    </svg>
+  );
+}
