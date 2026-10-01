@@ -30,7 +30,10 @@ export function CarCard({ car, eager = false, now, titleAs: Title = 'h2' }: CarC
   ];
 
   return (
-    <Link href={`/cars/${car.slug}`} className="group block h-full rounded-card focus-ring">
+    <Link
+      href={`/cars/${car.slug}`}
+      className="group block h-full rounded-card focus-ring transition-transform duration-200 hover:-translate-y-0.5 motion-reduce:transform-none"
+    >
       <Card interactive padding="none" className="flex h-full flex-col overflow-hidden">
         <div className="relative aspect-[16/10] bg-chip">
           {car.coverUrl ? (

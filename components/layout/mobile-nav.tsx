@@ -51,7 +51,7 @@ export function MobileNav({ brand, whatsapp }: { brand: ReactNode; whatsapp: str
               href={whatsapp}
               target="_blank"
               rel="noopener"
-              className={buttonStyles({ variant: 'secondary', fullWidth: true })}
+              className={buttonStyles({ variant: 'whatsapp', fullWidth: true })}
             >
               Chat on WhatsApp
             </a>

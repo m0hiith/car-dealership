@@ -37,7 +37,7 @@ export async function CarUnavailable({ car, settings }: { car: UnavailableCar; s
             Browse all cars
           </Link>
           {whatsapp && (
-            <a href={whatsapp} target="_blank" rel="noopener" className={buttonStyles({ variant: 'secondary' })}>
+            <a href={whatsapp} target="_blank" rel="noopener" className={buttonStyles({ variant: 'whatsapp' })}>
               <QuoteIcon width={18} height={18} />
               Ask for something similar
             </a>

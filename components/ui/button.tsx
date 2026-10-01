@@ -2,12 +2,13 @@ import type { ButtonHTMLAttributes } from 'react';
 import { cn } from '@/lib/cn';
 import { Spinner } from './icons';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+export type ButtonVariant = 'primary' | 'secondary' | 'whatsapp' | 'ghost' | 'danger';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 const variants: Record<ButtonVariant, string> = {
   primary: 'bg-navy text-white shadow-card hover:bg-navy-dark',
   secondary: 'bg-action text-white hover:bg-action-ink',
+  whatsapp: 'bg-trust-ink text-white shadow-card hover:bg-trust',
   ghost: 'border-[1.5px] border-input bg-transparent text-navy hover:border-action hover:bg-chip',
   danger: 'bg-danger text-white hover:bg-danger-dark',
 };

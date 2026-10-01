@@ -17,7 +17,7 @@ export function StickyCtaBar({ whatsapp, call }: ContactLinks) {
             href={whatsapp}
             target="_blank"
             rel="noopener"
-            className={buttonStyles({ variant: 'secondary', className: 'flex-1 px-2' })}
+            className={buttonStyles({ variant: 'whatsapp', className: 'flex-1 px-2' })}
           >
             <QuoteIcon width={18} height={18} />
             WhatsApp

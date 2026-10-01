@@ -16,7 +16,7 @@ export function ContactActions({ whatsapp, call, className }: ContactLinks & { c
       {(whatsapp || call) && (
         <div className="grid grid-cols-2 gap-3 *:only:col-span-2">
           {whatsapp && (
-            <a href={whatsapp} target="_blank" rel="noopener" className={buttonStyles({ variant: 'secondary' })}>
+            <a href={whatsapp} target="_blank" rel="noopener" className={buttonStyles({ variant: 'whatsapp' })}>
               <QuoteIcon width={18} height={18} />
               WhatsApp
             </a>

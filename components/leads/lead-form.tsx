@@ -34,7 +34,7 @@ export function LeadForm({ carSlug, defaultMessage, whatsappHref, idPrefix = 'le
         {whatsappHref && (
           <>
             <p className="text-body-md text-muted">Want a faster reply? Message us on WhatsApp.</p>
-            <a href={whatsappHref} target="_blank" rel="noopener" className={buttonStyles({ variant: 'secondary' })}>
+            <a href={whatsappHref} target="_blank" rel="noopener" className={buttonStyles({ variant: 'whatsapp' })}>
               <QuoteIcon width={18} height={18} />
               Continue on WhatsApp
             </a>

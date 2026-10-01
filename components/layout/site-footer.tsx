@@ -22,6 +22,7 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
 
   return (
     <footer className="mt-auto bg-navy-dark text-white/80">
+      <div aria-hidden className="h-1 bg-linear-to-r from-trust via-trust-light to-highlight" />
       <div className="mx-auto grid w-full max-w-page gap-8 px-4 py-10 md:grid-cols-3 md:px-6">
         <div className="flex flex-col gap-2">
           <p className="text-headline-sm text-white">{settings.dealershipName}</p>
@@ -83,7 +84,7 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
                         target="_blank"
                         rel="noopener"
                         aria-label={SOCIAL_NETWORKS[network]}
-                        className="inline-flex size-10 items-center justify-center rounded-full border border-white/20 focus-ring transition-colors hover:bg-white/10 hover:text-white"
+                        className="inline-flex size-10 items-center justify-center rounded-full border border-white/20 focus-ring transition-colors hover:border-trust-light hover:bg-trust/20 hover:text-white"
                       >
                         <Icon width={18} height={18} />
                       </a>

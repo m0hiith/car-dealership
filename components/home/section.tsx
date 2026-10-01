@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Reveal } from '@/components/ui/reveal';
 import { cn } from '@/lib/cn';
 
 /** A homepage band: heading, optional intro and action link, then content. */
@@ -20,9 +21,10 @@ export function HomeSection({
   const headingId = `${id}-heading`;
   return (
     <section id={id} aria-labelledby={headingId} className={cn('py-10 md:py-14', className)}>
-      <div className="mx-auto flex w-full max-w-page flex-col gap-6 px-4 md:px-6">
+      <Reveal className="mx-auto flex w-full max-w-page flex-col gap-6 px-4 md:px-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
           <div className="flex flex-col gap-1">
+            <span aria-hidden className="mb-2 h-1 w-10 rounded-full bg-linear-to-r from-trust to-trust-light" />
             <h2 id={headingId} className="text-headline-lg-mobile text-navy md:text-headline-lg">
               {title}
             </h2>
@@ -31,7 +33,7 @@ export function HomeSection({
           {action}
         </div>
         {children}
-      </div>
+      </Reveal>
     </section>
   );
 }

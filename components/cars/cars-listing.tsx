@@ -66,7 +66,7 @@ export async function CarsListing({ basePath, state: raw, fixed = {}, title, int
       : `Hi, I'm looking for a car. Can you help?`,
   );
   const whatsappCta = whatsapp && (
-    <a href={whatsapp} target="_blank" rel="noopener" className={buttonStyles({ variant: 'secondary' })}>
+    <a href={whatsapp} target="_blank" rel="noopener" className={buttonStyles({ variant: 'whatsapp' })}>
       <QuoteIcon width={18} height={18} />
       Tell us what you&apos;re looking for
     </a>

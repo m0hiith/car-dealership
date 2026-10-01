@@ -15,10 +15,10 @@ export function Hero({ content, brands }: { content: HomepageContent; brands: Br
       )}
       {media?.type === 'video' && <HeroVideo src={media.url} />}
       {/* Neutral scrim (no colour tint) that keeps white text readable on any photo. */}
-      {media && <div aria-hidden className="absolute inset-0 -z-10 bg-black/35" />}
+      {media && <div aria-hidden className="bg-black/35 absolute inset-0 -z-10" />}
 
       <div className="mx-auto flex w-full max-w-page flex-col gap-8 px-4 pt-10 pb-8 md:px-6 md:pt-20 md:pb-12">
-        <div className="flex max-w-2xl flex-col items-start gap-4">
+        <div className="rise flex max-w-2xl flex-col items-start gap-4">
           <h1 id="hero-heading" className="text-headline-xl-mobile md:text-headline-xl">
             {content.heroTitle}
           </h1>
@@ -29,10 +29,11 @@ export function Hero({ content, brands }: { content: HomepageContent; brands: Br
             </Link>
           )}
         </div>
-        <div className="max-w-4xl text-chip-ink">
+        <div className="rise rise-delay-2 max-w-4xl text-chip-ink">
           <HeroSearch brands={brands} />
         </div>
       </div>
+      <div aria-hidden className="h-1 bg-linear-to-r from-trust via-trust-light to-highlight" />
     </section>
   );
 }

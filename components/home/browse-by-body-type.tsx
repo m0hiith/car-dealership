@@ -16,10 +16,10 @@ export function BrowseByBodyType({ counts }: { counts: Record<BodyType, number> 
                 href={`/cars/type/${type}`}
                 className="group flex h-full flex-col items-center gap-3 rounded-card border border-border bg-card px-4 py-5 text-center shadow-card focus-ring transition-[box-shadow,border-color] hover:border-tint hover:shadow-card-hover"
               >
-                <BodyTypeIcon type={type} className="h-10 w-20 text-navy transition-colors group-hover:text-action" />
+                <BodyTypeIcon type={type} className="h-10 w-20 text-navy transition-colors group-hover:text-trust" />
                 <span className="flex flex-col gap-0.5">
                   <span className="text-label-lg text-navy">{BODY_TYPE_LABELS[type]}</span>
-                  <span className="text-body-sm text-muted">
+                  <span className={count > 0 ? 'text-body-sm font-medium text-trust-ink' : 'text-body-sm text-muted'}>
                     {count > 0 ? `${count} car${count === 1 ? '' : 's'}` : 'None right now'}
                   </span>
                 </span>

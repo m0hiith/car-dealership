@@ -9,10 +9,13 @@ export function WhyChooseUs({ items, title = 'Why choose us' }: { items: WhyUsIt
     <HomeSection id="why-us" title={title}>
       <ul className="grid gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3">
         {items.map((item, i) => (
-          <li key={i} className="flex gap-4 rounded-card border border-border bg-card p-4 shadow-card md:p-6">
+          <li
+            key={i}
+            className="flex gap-4 rounded-card border border-border bg-card p-4 shadow-card transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-card-hover motion-reduce:transform-none md:p-6"
+          >
             <span
               aria-hidden
-              className="flex size-10 shrink-0 items-center justify-center rounded-full bg-action-soft text-action-ink"
+              className="flex size-10 shrink-0 items-center justify-center rounded-full bg-trust-soft text-trust-ink"
             >
               <CheckIcon width={20} height={20} />
             </span>

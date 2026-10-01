@@ -56,7 +56,7 @@ export function LeadCard({ lead, dealershipName, now }: { lead: AdminLead; deale
               href={whatsapp}
               target="_blank"
               rel="noopener"
-              className={buttonStyles({ variant: 'secondary', size: 'sm' })}
+              className={buttonStyles({ variant: 'whatsapp', size: 'sm' })}
             >
               <QuoteIcon width={16} height={16} />
               WhatsApp

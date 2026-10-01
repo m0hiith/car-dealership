@@ -38,7 +38,7 @@ export function SiteHeader({ settings }: { settings: SiteSettings }) {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="rounded-control px-3 py-2 text-label-lg text-white/85 focus-ring transition-colors hover:bg-white/10 hover:text-white"
+                  className="relative rounded-control px-3 py-2 text-label-lg text-white/85 focus-ring transition-colors after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-trust-light after:transition-transform hover:text-white hover:after:scale-x-100"
                 >
                   {item.label}
                 </Link>
@@ -52,7 +52,7 @@ export function SiteHeader({ settings }: { settings: SiteSettings }) {
               href={whatsapp}
               target="_blank"
               rel="noopener"
-              className={buttonStyles({ variant: 'secondary', size: 'sm', className: 'hidden sm:inline-flex' })}
+              className={buttonStyles({ variant: 'whatsapp', size: 'sm', className: 'hidden sm:inline-flex' })}
             >
               WhatsApp
             </a>
