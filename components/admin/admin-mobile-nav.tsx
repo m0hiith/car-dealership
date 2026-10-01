@@ -25,7 +25,13 @@ export function AdminMobileNav({ brand, children }: { brand: ReactNode; children
         <MenuIcon width={22} height={22} />
       </button>
       <div className="min-w-0 flex-1">{brand}</div>
-      <Drawer open={open} onClose={() => setOpen(false)} title="Admin menu" header={brand} className="bg-navy-dark text-white">
+      <Drawer
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Admin menu"
+        header={brand}
+        className="bg-navy-dark text-white"
+      >
         <div onClick={closeOnSelect} className="flex min-h-full flex-col pt-2">
           {children}
         </div>

@@ -20,8 +20,7 @@ export function CarJsonLd({ car }: { car: PublicCarDetail }) {
       url,
       price: car.price,
       priceCurrency: 'INR',
-      availability:
-        car.status === 'reserved' ? 'https://schema.org/LimitedAvailability' : 'https://schema.org/InStock',
+      availability: car.status === 'reserved' ? 'https://schema.org/LimitedAvailability' : 'https://schema.org/InStock',
       itemCondition: 'https://schema.org/UsedCondition',
     },
   };
