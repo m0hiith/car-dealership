@@ -81,6 +81,7 @@ export type AdminTestimonial = {
   customerImage: string | null;
   review: string;
   rating: number;
+  reviewedWhen: string | null;
   isPublished: boolean;
   createdAt: string;
 };
@@ -90,7 +91,7 @@ export async function getAdminTestimonials(): Promise<AdminTestimonial[]> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from('testimonials')
-    .select('id, customer_name, customer_image, review, rating, is_published, created_at')
+    .select('id, customer_name, customer_image, review, rating, reviewed_when, is_published, created_at')
     .order('created_at', { ascending: false })
     .limit(500);
   if (error) throw new Error(`Could not load testimonials: ${error.message}`);
@@ -101,6 +102,7 @@ export async function getAdminTestimonials(): Promise<AdminTestimonial[]> {
     review: t.review,
     rating: t.rating,
     isPublished: t.is_published,
+    reviewedWhen: t.reviewed_when,
     createdAt: t.created_at,
   }));
 }

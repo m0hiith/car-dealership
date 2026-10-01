@@ -9,13 +9,14 @@ import { saveTestimonial } from '@/lib/actions/content';
 import type { AdminTestimonial } from '@/lib/queries/admin-content';
 import { fieldErrors, testimonialSchema, type FieldErrors, type TestimonialInput } from '@/lib/validation/content';
 
-const FIELD_ORDER = ['customerName', 'rating', 'review', 'photo'];
+const FIELD_ORDER = ['customerName', 'rating', 'review', 'reviewedWhen', 'photo'];
 
 /** Add or edit one testimonial (inside a dialog). */
 export function TestimonialForm({ testimonial, onDone }: { testimonial: AdminTestimonial | null; onDone: () => void }) {
   const { toast } = useToast();
   const [customerName, setCustomerName] = useState(testimonial?.customerName ?? '');
   const [review, setReview] = useState(testimonial?.review ?? '');
+  const [reviewedWhen, setReviewedWhen] = useState(testimonial?.reviewedWhen ?? '');
   const [rating, setRating] = useState(testimonial?.rating ?? 5);
   const [isPublished, setIsPublished] = useState(testimonial?.isPublished ?? true);
   const [photo, setPhoto] = useState(() =>
@@ -40,6 +41,7 @@ export function TestimonialForm({ testimonial, onDone }: { testimonial: AdminTes
       customerName,
       review,
       rating,
+      reviewedWhen,
       isPublished,
       photo: photo.change,
     };
@@ -94,6 +96,16 @@ export function TestimonialForm({ testimonial, onDone }: { testimonial: AdminTes
         onChange={(e) => setReview(e.target.value)}
         error={errors.review}
         hint="In the customer's own words."
+      />
+      <Input
+        id={fieldDomId('reviewedWhen')}
+        label="When (optional)"
+        maxLength={60}
+        autoComplete="off"
+        value={reviewedWhen}
+        onChange={(e) => setReviewedWhen(e.target.value)}
+        error={errors.reviewedWhen}
+        hint='Shown under the name, e.g. "8 months ago" or "Sept 2026".'
       />
       <div id={fieldDomId('photo')} tabIndex={-1}>
         <MediaField

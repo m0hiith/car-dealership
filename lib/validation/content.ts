@@ -168,6 +168,7 @@ export const testimonialSchema = z.object({
   id: z.uuid().optional(),
   customerName: requiredText(100, 'The name', "Enter the customer's name."),
   review: requiredText(2000, 'The review', 'Enter what the customer said.'),
+  reviewedWhen: optionalText(60, 'The date').optional(),
   rating: z.int({ error: 'Choose a rating.' }).min(1, { error: 'Choose a rating.' }).max(5),
   isPublished: z.boolean(),
   photo: mediaChangeSchema('testimonials'),

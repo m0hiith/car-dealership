@@ -195,7 +195,8 @@ export async function saveSiteSettings(raw: unknown): Promise<SaveResult> {
 export type SaveTestimonialResult =
   { ok: true; testimonial: AdminTestimonial } | { ok: false; error: string; fieldErrors?: FieldErrors };
 
-const TESTIMONIAL_COLUMNS = 'id, customer_name, customer_image, review, rating, is_published, created_at';
+const TESTIMONIAL_COLUMNS =
+  'id, customer_name, customer_image, review, rating, reviewed_when, is_published, created_at';
 
 function toAdminTestimonial(row: {
   id: string;
@@ -203,6 +204,7 @@ function toAdminTestimonial(row: {
   customer_image: string | null;
   review: string;
   rating: number;
+  reviewed_when: string | null;
   is_published: boolean;
   created_at: string;
 }): AdminTestimonial {
@@ -212,6 +214,7 @@ function toAdminTestimonial(row: {
     customerImage: row.customer_image,
     review: row.review,
     rating: row.rating,
+    reviewedWhen: row.reviewed_when,
     isPublished: row.is_published,
     createdAt: row.created_at,
   };
@@ -248,6 +251,7 @@ export async function saveTestimonial(raw: unknown): Promise<SaveTestimonialResu
     customer_image: photo.url,
     review: t.review,
     rating: t.rating,
+    reviewed_when: t.reviewedWhen ?? null,
     is_published: t.isPublished,
   };
   const { data, error } = t.id

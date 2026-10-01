@@ -233,6 +233,8 @@ export type Database = {
           hero_media_url: string | null
           hero_title: string
           id: number
+          reviews_count: number | null
+          reviews_rating: number | null
           social_videos: string[]
           testimonial_videos: string[]
           updated_at: string
@@ -249,6 +251,8 @@ export type Database = {
           hero_media_url?: string | null
           hero_title: string
           id?: number
+          reviews_count?: number | null
+          reviews_rating?: number | null
           social_videos?: string[]
           testimonial_videos?: string[]
           updated_at?: string
@@ -265,6 +269,8 @@ export type Database = {
           hero_media_url?: string | null
           hero_title?: string
           id?: number
+          reviews_count?: number | null
+          reviews_rating?: number | null
           social_videos?: string[]
           testimonial_videos?: string[]
           updated_at?: string
@@ -462,6 +468,7 @@ export type Database = {
           is_published: boolean
           rating: number
           review: string
+          reviewed_when: string | null
           updated_at: string
         }
         Insert: {
@@ -472,6 +479,7 @@ export type Database = {
           is_published?: boolean
           rating: number
           review: string
+          reviewed_when?: string | null
           updated_at?: string
         }
         Update: {
@@ -482,6 +490,7 @@ export type Database = {
           is_published?: boolean
           rating?: number
           review?: string
+          reviewed_when?: string | null
           updated_at?: string
         }
         Relationships: []
