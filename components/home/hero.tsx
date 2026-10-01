@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { buttonStyles } from '@/components/ui';
 import type { BrowseOptions, HomepageContent } from '@/lib/queries/homepage';
 import { HeroSearch } from './hero-search';
+import { HeroVideo } from './hero-video';
 
 /** Headline, description, CTA and optional image or video from homepage_content, plus the search box. */
 export function Hero({ content, brands }: { content: HomepageContent; brands: BrowseOptions['brands'] }) {
@@ -12,22 +13,9 @@ export function Hero({ content, brands }: { content: HomepageContent; brands: Br
       {media?.type === 'image' && (
         <Image src={media.url} alt="" fill priority sizes="100vw" className="-z-20 object-cover" />
       )}
-      {media?.type === 'video' && (
-        <video
-          src={media.url}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          aria-hidden
-          className="absolute inset-0 -z-20 size-full object-cover motion-reduce:hidden"
-        />
-      )}
-      {/* Keeps white text readable on any photo. */}
-      {media && (
-        <div aria-hidden className="absolute inset-0 -z-10 bg-linear-to-r from-navy-dark/90 via-navy/75 to-navy/40" />
-      )}
+      {media?.type === 'video' && <HeroVideo src={media.url} />}
+      {/* Neutral scrim (no colour tint) that keeps white text readable on any photo. */}
+      {media && <div aria-hidden className="absolute inset-0 -z-10 bg-black/35" />}
 
       <div className="mx-auto flex w-full max-w-page flex-col gap-8 px-4 pt-10 pb-8 md:px-6 md:pt-20 md:pb-12">
         <div className="flex max-w-2xl flex-col items-start gap-4">
