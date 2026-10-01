@@ -19,6 +19,7 @@ export type HomepageContent = {
   videoUrl: string | null;
   testimonialVideos: string[];
   socialVideos: string[];
+  reviewsSummary: { rating: number; count: number } | null;
   aboutTitle: string | null;
   aboutBody: string | null;
 };
@@ -29,7 +30,7 @@ export const getHomepageContent = unstable_cache(
     const { data, error } = await supabase
       .from('homepage_content')
       .select(
-        'hero_title, hero_description, hero_media_url, hero_media_type, cta_text, cta_link, why_us, video_url, testimonial_videos, social_videos, about_title, about_body',
+        'hero_title, hero_description, hero_media_url, hero_media_type, cta_text, cta_link, why_us, video_url, testimonial_videos, social_videos, reviews_rating, reviews_count, about_title, about_body',
       )
       .eq('id', 1)
       .maybeSingle();
@@ -45,6 +46,10 @@ export const getHomepageContent = unstable_cache(
       videoUrl: data?.video_url ?? null,
       testimonialVideos: data?.testimonial_videos ?? [],
       socialVideos: data?.social_videos ?? [],
+      reviewsSummary:
+        data?.reviews_rating != null && data.reviews_count != null
+          ? { rating: Number(data.reviews_rating), count: data.reviews_count }
+          : null,
       aboutTitle: data?.about_title ?? null,
       aboutBody: data?.about_body ?? null,
     };
@@ -128,6 +133,7 @@ export type PublicTestimonial = {
   customerName: string;
   customerImage: string | null;
   review: string;
+  reviewedWhen: string | null;
   rating: number;
 };
 
@@ -139,7 +145,7 @@ export const getPublishedTestimonials = unstable_cache(
     const supabase = createSupabasePublicClient();
     const { data, error } = await supabase
       .from('testimonials')
-      .select('id, customer_name, customer_image, review, rating')
+      .select('id, customer_name, customer_image, review, reviewed_when, rating')
       .eq('is_published', true)
       .order('created_at', { ascending: false })
       .limit(limit);
@@ -149,6 +155,7 @@ export const getPublishedTestimonials = unstable_cache(
       customerName: t.customer_name,
       customerImage: t.customer_image,
       review: t.review,
+      reviewedWhen: t.reviewed_when,
       rating: t.rating,
     }));
   },

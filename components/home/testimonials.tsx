@@ -1,45 +1,64 @@
-import Image from 'next/image';
-import { StarRating } from '@/components/ui';
+import { buttonStyles, StarRating } from '@/components/ui';
 import type { PublicTestimonial } from '@/lib/queries/homepage';
+import { ReviewCarousel } from './review-carousel';
 import { HomeSection } from './section';
 import { VideoReel } from './video-reel';
 
-/** Published testimonials only. Hidden when there are none. */
-export function Testimonials({ testimonials, videos }: { testimonials: PublicTestimonial[]; videos: string[] }) {
+type Summary = { rating: number; count: number };
+
+/** Customer videos, a rating summary and a swipeable strip of reviews. Hidden when there is nothing to show. */
+export function Testimonials({
+  testimonials,
+  videos,
+  reviewsUrl,
+  summary,
+}: {
+  testimonials: PublicTestimonial[];
+  videos: string[];
+  reviewsUrl: string | null;
+  summary: Summary | null;
+}) {
   if (testimonials.length === 0 && videos.length === 0) return null;
+  const shown: Summary | null =
+    summary ??
+    (testimonials.length
+      ? { rating: testimonials.reduce((sum, t) => sum + t.rating, 0) / testimonials.length, count: testimonials.length }
+      : null);
+
   return (
     <HomeSection id="testimonials" title="What our customers say">
       <VideoReel urls={videos} label="Customer video" className="max-w-xl" />
-      {testimonials.length > 0 && (
-        <ul className="-mx-4 scrollbar-none flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-2 md:gap-6 md:overflow-visible md:px-0 md:pb-0 lg:grid-cols-3">
-          {testimonials.map((t) => (
-            <li key={t.id} className="w-[85%] shrink-0 snap-start sm:w-[60%] md:w-auto">
-              <figure className="flex h-full flex-col gap-4 rounded-card border border-border bg-card p-4 shadow-card md:p-6">
-                <StarRating rating={t.rating} />
-                <blockquote className="flex-1 text-body-lg whitespace-pre-line text-chip-ink">{t.review}</blockquote>
-                <figcaption className="flex items-center gap-3">
-                  {t.customerImage ? (
-                    <Image
-                      src={t.customerImage}
-                      alt=""
-                      width={40}
-                      height={40}
-                      className="size-10 rounded-full bg-chip object-cover"
-                    />
-                  ) : (
-                    <span
-                      aria-hidden
-                      className="flex size-10 items-center justify-center rounded-full bg-chip text-label-lg text-navy"
-                    >
-                      {t.customerName.trim().charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                  <span className="text-label-lg text-navy">{t.customerName}</span>
-                </figcaption>
-              </figure>
-            </li>
-          ))}
-        </ul>
+      {shown && testimonials.length > 0 && (
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
+          <div className="flex shrink-0 items-center gap-4 rounded-card bg-chip px-5 py-4 md:w-48 md:flex-col md:gap-2 md:py-8">
+            <p className="text-headline-xl-mobile text-navy tabular-nums md:text-headline-xl">
+              {shown.rating.toFixed(1)}
+            </p>
+            <div className="flex flex-col gap-1 md:items-center">
+              <StarRating rating={Math.round(shown.rating)} size={20} />
+              <p className="text-body-sm text-muted">
+                {shown.count.toLocaleString('en-IN')} review{shown.count === 1 ? '' : 's'}
+              </p>
+            </div>
+          </div>
+          <div className="min-w-0 flex-1">
+            <ReviewCarousel reviews={testimonials} />
+          </div>
+        </div>
+      )}
+      {reviewsUrl && testimonials.length > 0 && (
+        <a
+          href={reviewsUrl}
+          target="_blank"
+          rel="noopener"
+          className={buttonStyles({
+            variant: 'ghost',
+            size: 'lg',
+            className: 'self-center border-trust text-trust-ink hover:border-trust hover:bg-trust-soft',
+          })}
+        >
+          View all reviews
+        </a>
       )}
     </HomeSection>
   );

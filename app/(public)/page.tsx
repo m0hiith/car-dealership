@@ -59,7 +59,12 @@ export default async function HomePage() {
       <SocialVideos urls={content.socialVideos} />
       <WhyChooseUs items={content.whyUs} />
       <DealershipVideo url={content.videoUrl} dealershipName={settings.dealershipName} />
-      <Testimonials testimonials={testimonials} videos={content.testimonialVideos} />
+      <Testimonials
+        testimonials={testimonials}
+        videos={content.testimonialVideos}
+        reviewsUrl={settings.mapUrl}
+        summary={content.reviewsSummary}
+      />
       <ContactSection settings={settings} />
     </>
   );
