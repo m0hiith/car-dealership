@@ -1,14 +1,14 @@
 'use server';
 
-import { createHash } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
-import { headers } from 'next/headers';
 import { after } from 'next/server';
 import { z } from 'zod';
+import { CALL_WHEN, followUpForChoice, isPickableDate } from '@/lib/follow-up';
+import { formatDate } from '@/lib/format';
 import { sendNewLeadEmail } from '@/lib/notifications/lead-email';
 import { getPublicCarBySlug } from '@/lib/queries/car-detail';
 import { getSiteSettings } from '@/lib/queries/settings';
-import { createSupabaseAdminClient } from '@/lib/supabase/admin';
+import { withinRateLimit } from '@/lib/rate-limit';
 import { createSupabasePublicClient } from '@/lib/supabase/public';
 import { HONEYPOT_FIELD, leadSchema, type LeadField } from '@/lib/validation/lead';
 
@@ -26,28 +26,6 @@ export type LeadFormState =
 /** Per IP: this many enquiries per window. Generous for a family sharing a connection, useless for spam. */
 const RATE_LIMIT = { max: 5, window: '10 minutes' } as const;
 
-async function clientIp(): Promise<string> {
-  const h = await headers();
-  return h.get('x-forwarded-for')?.split(',')[0]?.trim() || h.get('x-real-ip')?.trim() || 'unknown';
-}
-
-/** True while this visitor is under the limit. Fails open if the check itself errors, so leads are never lost. */
-async function withinRateLimit(): Promise<boolean> {
-  const key = createHash('sha256')
-    .update(`lead:${await clientIp()}`)
-    .digest('hex');
-  const { data, error } = await createSupabaseAdminClient().rpc('take_lead_rate_limit', {
-    p_key: key,
-    p_max: RATE_LIMIT.max,
-    p_window: RATE_LIMIT.window,
-  });
-  if (error) {
-    console.error('Lead rate limit check failed', { code: error.code, message: error.message });
-    return true;
-  }
-  return data === true;
-}
-
 function text(formData: FormData, key: string): string {
   const value = formData.get(key);
   return typeof value === 'string' ? value : '';
@@ -60,10 +38,20 @@ export async function submitLead(_prev: LeadFormState, formData: FormData): Prom
     email: text(formData, 'email'),
     preferredTime: text(formData, 'preferredTime'),
     message: text(formData, 'message'),
+    callWhen: text(formData, 'callWhen'),
+    callDate: text(formData, 'callDate'),
+    city: text(formData, 'city'),
+    budgetRange: text(formData, 'budgetRange'),
+    bodyType: text(formData, 'bodyType'),
+    timeline: text(formData, 'timeline'),
+    exchange: text(formData, 'exchange'),
   };
 
   // Honeypot filled in: a bot. Look successful so it moves on, save nothing.
-  if (text(formData, HONEYPOT_FIELD)) return { status: 'success', name: values.name.trim() };
+  if (text(formData, HONEYPOT_FIELD)) {
+    console.warn('Lead dropped by the spam trap (honeypot field was filled)');
+    return { status: 'success', name: values.name.trim() };
+  }
 
   const carSlug = text(formData, 'carSlug');
   const parsed = leadSchema.safeParse({ ...values, carSlug: carSlug || undefined });
@@ -78,12 +66,35 @@ export async function submitLead(_prev: LeadFormState, formData: FormData): Prom
         email: fieldErrors.email?.[0],
         preferredTime: fieldErrors.preferredTime?.[0],
         message: fieldErrors.message?.[0],
+        callWhen: fieldErrors.callWhen?.[0],
+        callDate: fieldErrors.callDate?.[0],
+        city: fieldErrors.city?.[0],
+        budgetRange: fieldErrors.budgetRange?.[0],
+        bodyType: fieldErrors.bodyType?.[0],
+        timeline: fieldErrors.timeline?.[0],
+        exchange: fieldErrors.exchange?.[0],
       },
       values,
     };
   }
 
-  if (!(await withinRateLimit())) {
+  // "When should we call you?" becomes a follow-up time for staff (Asia/Kolkata).
+  const now = Date.now();
+  const { callWhen, callDate } = parsed.data;
+  if (callWhen === 'pick' && !(callDate && isPickableDate(callDate, now))) {
+    return {
+      status: 'error',
+      error: 'Please check the highlighted fields.',
+      fieldErrors: { callDate: 'Choose a date from today up to two months ahead.' },
+      values,
+    };
+  }
+  const followUpAt = callWhen ? followUpForChoice(callWhen, now, callDate) : null;
+  const followUpNote = callWhen
+    ? `Customer asked: ${callWhen === 'pick' && followUpAt ? formatDate(followUpAt) : CALL_WHEN[callWhen]}`
+    : null;
+
+  if (!(await withinRateLimit('lead', RATE_LIMIT))) {
     return {
       status: 'error',
       error: "You've sent several enquiries in a short time. Please wait a few minutes, or call or WhatsApp us.",
@@ -112,6 +123,13 @@ export async function submitLead(_prev: LeadFormState, formData: FormData): Prom
         preferred_time: lead.preferredTime ?? null,
         message: [note, message].filter(Boolean).join('\n').slice(0, 2000) || null,
         source: carId ? 'car_detail' : 'website',
+        follow_up_at: followUpAt?.toISOString() ?? null,
+        follow_up_note: followUpNote,
+        city: lead.city ?? null,
+        budget_range: lead.budgetRange ?? null,
+        preferred_body_type: lead.bodyType ?? null,
+        buying_timeline: lead.timeline ?? null,
+        has_exchange: lead.exchange ?? null,
       });
 
   let { error } = await insert(car?.id ?? null);
