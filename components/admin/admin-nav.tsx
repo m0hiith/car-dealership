@@ -12,6 +12,8 @@ import {
   PlusIcon,
   QuoteIcon,
   SettingsIcon,
+  StarIcon,
+  TagIcon,
 } from '@/components/ui/icons';
 import { cn } from '@/lib/cn';
 import { signOut } from '@/lib/actions/auth';
@@ -22,7 +24,9 @@ const icons: Record<AdminNavKey, typeof GridIcon> = {
   cars: CarIcon,
   'add-car': PlusIcon,
   leads: InboxIcon,
+  'sell-requests': TagIcon,
   testimonials: QuoteIcon,
+  feedback: StarIcon,
   content: LayoutIcon,
   settings: SettingsIcon,
 };
@@ -30,7 +34,7 @@ const icons: Record<AdminNavKey, typeof GridIcon> = {
 const itemStyles =
   'flex h-11 w-full items-center gap-3 rounded-control px-3 text-label-lg text-white/75 focus-ring transition-colors hover:bg-white/5 hover:text-white';
 
-export function AdminNav({ newLeadCount }: { newLeadCount: number }) {
+export function AdminNav({ newLeadCount, newSellCount }: { newLeadCount: number; newSellCount: number }) {
   const active = activeNavKey(usePathname());
 
   return (
@@ -48,11 +52,8 @@ export function AdminNav({ newLeadCount }: { newLeadCount: number }) {
               >
                 <Icon width={20} height={20} className={isActive ? 'text-highlight' : undefined} />
                 <span className="flex-1">{label}</span>
-                {key === 'leads' && newLeadCount > 0 && (
-                  <Badge tone="blue" aria-label={`${newLeadCount} new`}>
-                    {newLeadCount > 99 ? '99+' : newLeadCount}
-                  </Badge>
-                )}
+                {key === 'leads' && <NewCount count={newLeadCount} />}
+                {key === 'sell-requests' && <NewCount count={newSellCount} />}
               </Link>
             </li>
           );
@@ -65,5 +66,14 @@ export function AdminNav({ newLeadCount }: { newLeadCount: number }) {
         </button>
       </form>
     </nav>
+  );
+}
+
+function NewCount({ count }: { count: number }) {
+  if (count <= 0) return null;
+  return (
+    <Badge tone="blue" aria-label={`${count} new`}>
+      {count > 99 ? '99+' : count}
+    </Badge>
   );
 }
