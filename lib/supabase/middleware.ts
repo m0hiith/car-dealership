@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
 import type { Database } from '@/lib/database.types';
+import { isRecentlySold } from '@/lib/seo';
 import { getSupabasePublicEnv } from './env';
 
 /**
@@ -48,10 +49,11 @@ export function withSessionCookies(redirect: NextResponse, from: NextResponse) {
 }
 
 /**
- * True if this slug belonged to a car that has been sold or archived, so
- * the proxy can send its page as 410 Gone. Anon client, no cookies.
+ * True when the car's page should answer 410 Gone: archived, or sold more
+ * than SOLD_PAGE_DAYS ago. A recently sold car's page stays live (it says
+ * "sold" and suggests similar cars) so its search ranking is not lost at once.
  */
-export async function isCarGone(slug: string): Promise<boolean> {
+export async function isCarGone(slug: string, now = Date.now()): Promise<boolean> {
   const { url, anonKey } = getSupabasePublicEnv();
   const supabase = createClient<Database>(url, anonKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
@@ -61,5 +63,7 @@ export async function isCarGone(slug: string): Promise<boolean> {
     console.error('Could not check car status', { slug, code: error.code, message: error.message });
     return false;
   }
-  return data.length > 0;
+  const car = data[0];
+  if (!car) return false;
+  return car.status !== 'sold' || !isRecentlySold(car.sold_at, now);
 }

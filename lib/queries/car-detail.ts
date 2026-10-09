@@ -31,6 +31,9 @@ export type PublicCarDetail = {
   registrationState: string | null;
   registrationCity: string | null;
   description: string | null;
+  /** Staff overrides for the page title and meta description; null = generated. */
+  seoTitle: string | null;
+  seoDescription: string | null;
   status: Extract<CarStatus, 'published' | 'reserved'>;
   featured: boolean;
   publishedAt: string | null;
@@ -47,7 +50,7 @@ export const getPublicCarBySlug = cache((slug: string) =>
       const { data: car, error } = await supabase
         .from('cars')
         .select(
-          'id, slug, variant, price, year, kms_driven, fuel_type, transmission, body_type, engine_cc, owners, color, registration_state, registration_city, description, status, featured, published_at, brand:brands(name, slug), model:models!cars_model_id_brand_id_fkey(name), car_images(id, image_url, is_primary, sort_order), car_features(feature_name)',
+          'id, slug, variant, price, year, kms_driven, fuel_type, transmission, body_type, engine_cc, owners, color, registration_state, registration_city, description, seo_title, seo_description, status, featured, published_at, brand:brands(name, slug), model:models!cars_model_id_brand_id_fkey(name), car_images(id, image_url, is_primary, sort_order), car_features(feature_name)',
         )
         .eq('slug', slug)
         .in('status', ['published', 'reserved'])
@@ -77,6 +80,8 @@ export const getPublicCarBySlug = cache((slug: string) =>
         registrationState: car.registration_state,
         registrationCity: car.registration_city,
         description: car.description,
+        seoTitle: car.seo_title,
+        seoDescription: car.seo_description,
         status: car.status === 'reserved' ? 'reserved' : 'published',
         featured: car.featured,
         publishedAt: car.published_at,
@@ -95,6 +100,7 @@ export type UnavailableCar = {
   bodyType: BodyType;
   price: number;
   status: Extract<CarStatus, 'sold' | 'archived'>;
+  soldAt: string | null;
 };
 
 /** What the public may know about a sold or archived car (no photos or internal fields). */
@@ -111,6 +117,7 @@ export const getUnavailableCar = cache((slug: string) =>
         bodyType: data.body_type,
         price: data.price,
         status: data.status === 'sold' ? 'sold' : 'archived',
+        soldAt: data.sold_at,
       };
     },
     ['unavailable-car', slug],

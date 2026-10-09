@@ -5,14 +5,17 @@ import { AutoDealerJsonLd } from '@/components/seo/auto-dealer-json-ld';
 import { Card } from '@/components/ui';
 import { whatsappHref } from '@/lib/contact';
 import { getSiteSettings } from '@/lib/queries/settings';
+import { pageMetadata, SEO_CITY } from '@/lib/seo';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { dealershipName } = await getSiteSettings();
-  return {
+  const settings = await getSiteSettings();
+  return pageMetadata({
     title: 'Contact us',
-    description: `Call, WhatsApp or visit ${dealershipName}, or send us a message and we will call you back.`,
-    alternates: { canonical: '/contact' },
-  };
+    description: `Call, WhatsApp or visit ${settings.dealershipName} in ${SEO_CITY}, or send us a message and we will call you back.`,
+    path: '/contact',
+    siteName: settings.dealershipName,
+    image: settings.logoUrl,
+  });
 }
 
 /** Contact details from site_settings and a general enquiry form (not tied to a car). */

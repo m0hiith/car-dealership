@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
+import { FeedbackPrompt } from '@/components/feedback/feedback-prompt';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteHeader } from '@/components/layout/site-header';
 import { getSiteSettings } from '@/lib/queries/settings';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { dealershipName, logoUrl } = await getSiteSettings();
+  const { dealershipName, logoUrl, googleSiteVerification } = await getSiteSettings();
   return {
     title: { template: `%s | ${dealershipName}`, default: dealershipName },
     openGraph: {
@@ -14,6 +15,8 @@ export async function generateMetadata(): Promise<Metadata> {
       images: logoUrl ? [{ url: logoUrl }] : undefined,
     },
     twitter: { card: 'summary_large_image' },
+    // Search Console ownership check, pasted in /admin/settings.
+    verification: googleSiteVerification ? { google: googleSiteVerification } : undefined,
   };
 }
 
@@ -23,10 +26,11 @@ export default async function PublicLayout({ children }: LayoutProps<'/'>) {
   return (
     <>
       <SiteHeader settings={settings} />
-      <main id="main" className="flex flex-1 flex-col bg-canvas">
+      <main id="main" className="surface-dark flex flex-1 flex-col bg-page">
         {children}
       </main>
       <SiteFooter settings={settings} />
+      {settings.feedback && <FeedbackPrompt delaySeconds={settings.feedback.delaySeconds} />}
     </>
   );
 }
