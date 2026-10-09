@@ -2,7 +2,7 @@ import 'server-only';
 import { unstable_cache } from 'next/cache';
 import { z } from 'zod';
 import { CACHE_TAGS } from '@/lib/cache-tags';
-import type { CarStatus, FuelType, Transmission } from '@/lib/car-options';
+import type { BodyType, CarStatus, FuelType, Transmission } from '@/lib/car-options';
 import { createSupabasePublicClient } from '@/lib/supabase/public';
 import { PUBLIC_CARS_PAGE_SIZE, type PublicSort, type RpcFilters } from '@/lib/validation/public-cars';
 
@@ -13,6 +13,9 @@ export type PublicCarCard = {
   id: string;
   slug: string;
   title: string;
+  brand: string | null;
+  model: string | null;
+  bodyType: BodyType;
   variant: string | null;
   price: number;
   year: number;
@@ -43,6 +46,7 @@ type CardRow = {
   kms_driven: number;
   fuel_type: FuelType;
   transmission: Transmission;
+  body_type: BodyType;
   owners: number;
   status: CarStatus;
   featured: boolean;
@@ -61,6 +65,9 @@ export function toPublicCarCard(car: CardRow): PublicCarCard {
     id: car.id,
     slug: car.slug,
     title: carTitle(car),
+    brand: car.brand?.name ?? null,
+    model: car.model?.name ?? null,
+    bodyType: car.body_type,
     variant: car.variant,
     price: car.price,
     year: car.year,

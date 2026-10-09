@@ -13,6 +13,12 @@ export const CACHE_TAGS = {
   content: 'content',
   /** Published testimonials. */
   testimonials: 'testimonials',
+  /** Visible team members on /about. */
+  team: 'team',
+  /** Visible services on /about. */
+  services: 'services',
+  /** Active social links in the homepage banner. */
+  social: 'social',
   /** One car's detail page. */
   car: (slug: string) => `car:${slug}`,
 } as const;

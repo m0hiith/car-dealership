@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { isSiteMediaPath, type SiteMediaKind } from '@/lib/site-media';
+import { FEEDBACK_DELAY_MINUTES } from '@/lib/validation/feedback';
 import { normaliseIndianMobile } from '@/lib/validation/lead';
 import { parseVideoUrl } from '@/lib/video';
 
@@ -155,9 +156,52 @@ export const siteSettingsSchema = z.object({
     facebook: httpsUrl(300, 'Paste the full link, starting with https://'),
     youtube: httpsUrl(300, 'Paste the full link, starting with https://'),
   }),
+  googleSiteVerification: z
+    .string()
+    .max(400, { error: 'Paste only the verification tag or its code.' })
+    .transform((v, ctx) => {
+      const token = parseSiteVerification(v);
+      if (token === undefined) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Paste the HTML tag from Search Console, or just the code inside content="…".',
+        });
+        return z.NEVER;
+      }
+      return token;
+    }),
+  feedbackEnabled: z.boolean(),
+  feedbackDelayMinutes: z
+    .string()
+    .trim()
+    .regex(/^\d{1,2}$/, {
+      error: `Enter a number of minutes from ${FEEDBACK_DELAY_MINUTES.min} to ${FEEDBACK_DELAY_MINUTES.max}.`,
+    })
+    .transform(Number)
+    .pipe(
+      z
+        .number()
+        .min(FEEDBACK_DELAY_MINUTES.min, {
+          error: `Enter a number of minutes from ${FEEDBACK_DELAY_MINUTES.min} to ${FEEDBACK_DELAY_MINUTES.max}.`,
+        })
+        .max(FEEDBACK_DELAY_MINUTES.max, {
+          error: `Enter a number of minutes from ${FEEDBACK_DELAY_MINUTES.min} to ${FEEDBACK_DELAY_MINUTES.max}.`,
+        }),
+    ),
 });
 
 export type SiteSettingsInput = z.input<typeof siteSettingsSchema>;
+
+/**
+ * Google Search Console verification. Staff may paste the token or the whole
+ * <meta name="google-site-verification" content="..."> tag; only the token is kept.
+ */
+export function parseSiteVerification(raw: string): string | null | undefined {
+  const text = raw.trim();
+  if (!text) return null;
+  const token = /content\s*=\s*["']([^"']+)["']/i.exec(text)?.[1] ?? text;
+  return /^[A-Za-z0-9_-]{10,100}$/.test(token) ? token : undefined;
+}
 
 // ---------------------------------------------------------------------------
 // Testimonials
@@ -179,6 +223,149 @@ export type TestimonialInput = z.input<typeof testimonialSchema>;
 export const testimonialIdSchema = z.uuid();
 
 // ---------------------------------------------------------------------------
+// Social links (homepage banner)
+// ---------------------------------------------------------------------------
+
+export const SOCIAL_PLATFORMS = {
+  instagram: 'Instagram',
+  youtube: 'YouTube',
+  facebook: 'Facebook',
+  whatsapp: 'WhatsApp',
+  other: 'Other',
+} as const;
+export type SocialPlatform = keyof typeof SOCIAL_PLATFORMS;
+export const SOCIAL_PLATFORM_KEYS = Object.keys(SOCIAL_PLATFORMS) as [SocialPlatform, ...SocialPlatform[]];
+export const MAX_SOCIAL_LINKS = 20;
+
+/** Hosts a link may use per platform; "other" accepts any https link. */
+const PLATFORM_HOSTS: Record<Exclude<SocialPlatform, 'other'>, RegExp> = {
+  instagram: /(^|\.)instagram\.com$/,
+  youtube: /(^|\.)(youtube\.com|youtu\.be)$/,
+  facebook: /(^|\.)(facebook\.com|fb\.com|fb\.watch)$/,
+  whatsapp: /(^|\.)(wa\.me|whatsapp\.com)$/,
+};
+
+export function isLinkOnPlatform(platform: SocialPlatform, url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:') return false;
+    return platform === 'other' || PLATFORM_HOSTS[platform].test(parsed.hostname);
+  } catch {
+    return false;
+  }
+}
+
+export const socialLinkSchema = z
+  .object({
+    /** Missing for a new link. */
+    id: z.uuid().optional(),
+    platform: z.enum(SOCIAL_PLATFORM_KEYS, { error: 'Choose a platform.' }),
+    label: requiredText(60, 'The name', 'Enter a name for this link, e.g. Our Instagram.'),
+    url: requiredText(500, 'The link', 'Paste the link, starting with https://'),
+    thumbnail: mediaChangeSchema('social'),
+    isActive: z.boolean(),
+  })
+  .superRefine((l, ctx) => {
+    if (!isLinkOnPlatform(l.platform, l.url)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['url'],
+        message:
+          l.platform === 'other'
+            ? 'Paste a full link starting with https://'
+            : `Paste a ${SOCIAL_PLATFORMS[l.platform]} link starting with https://`,
+      });
+    }
+  });
+
+export type SocialLinkInput = z.input<typeof socialLinkSchema>;
+
+export const socialLinkIdSchema = z.uuid();
+
+// ---------------------------------------------------------------------------
+// Services (/about)
+// ---------------------------------------------------------------------------
+
+export const SERVICE_ICONS = {
+  car: 'Car',
+  tag: 'Price tag',
+  exchange: 'Exchange arrows',
+  wrench: 'Spanner',
+  bag: 'Shopping bag',
+  finance: 'Rupee note',
+  shield: 'Shield',
+  chat: 'Chat bubble',
+} as const;
+export type ServiceIcon = keyof typeof SERVICE_ICONS;
+export const SERVICE_ICON_KEYS = Object.keys(SERVICE_ICONS) as [ServiceIcon, ...ServiceIcon[]];
+export const MAX_SERVICES = 20;
+
+/** Seed copy starts like this so staff (and the admin list) can spot text still to be written. */
+export const PLACEHOLDER_PREFIX = '[Placeholder';
+
+export function isServiceIcon(value: string): value is ServiceIcon {
+  return value in SERVICE_ICONS;
+}
+
+export const serviceSchema = z
+  .object({
+    /** Missing for a new service. */
+    id: z.uuid().optional(),
+    title: requiredText(60, 'The title', 'Enter a title, e.g. Exchange.'),
+    description: z.string().trim().max(200, { error: 'The description can be at most 200 characters.' }),
+    icon: z.enum(SERVICE_ICON_KEYS, { error: 'Choose an icon.' }),
+    ctaLabel: optionalText(40, 'The button text'),
+    /** Empty: the button opens WhatsApp with the service name pre-filled. */
+    ctaLink: ctaLinkSchema,
+    isVisible: z.boolean(),
+  })
+  .superRefine((s, ctx) => {
+    if (s.ctaLabel && !s.ctaLink) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['ctaLink'],
+        message: 'Add where the button goes, or clear the button text to use WhatsApp.',
+      });
+    }
+  });
+
+export type ServiceInput = z.input<typeof serviceSchema>;
+
+export const serviceIdSchema = z.uuid();
+
+// ---------------------------------------------------------------------------
+// Team (/about)
+// ---------------------------------------------------------------------------
+
+export const MAX_TEAM_MEMBERS = 12;
+
+export const teamMemberSchema = z.object({
+  /** Missing for a new team member. */
+  id: z.uuid().optional(),
+  name: requiredText(80, 'The name', 'Enter a name.'),
+  role: optionalText(80, 'The role'),
+  bio: optionalText(500, 'The bio'),
+  /** Whole years, typed as text; empty means not shown. */
+  yearsExperience: z
+    .string()
+    .trim()
+    .transform((v, ctx) => {
+      if (!v) return null;
+      if (!/^\d{1,2}$/.test(v)) {
+        ctx.addIssue({ code: 'custom', message: 'Enter whole years, e.g. 15, or leave it empty.' });
+        return z.NEVER;
+      }
+      return Number(v);
+    }),
+  photo: mediaChangeSchema('team'),
+  isVisible: z.boolean(),
+});
+
+export type TeamMemberInput = z.input<typeof teamMemberSchema>;
+
+export const teamMemberIdSchema = z.uuid();
+
+// ---------------------------------------------------------------------------
 // Uploads and errors
 // ---------------------------------------------------------------------------
 
@@ -197,6 +384,8 @@ export const siteMediaUploadSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('hero'), ext: z.enum(['webp', 'mp4', 'webm']) }),
   z.object({ kind: z.literal('logo'), ext: z.literal('webp') }),
   z.object({ kind: z.literal('testimonials'), ext: z.literal('webp') }),
+  z.object({ kind: z.literal('social'), ext: z.literal('webp') }),
+  z.object({ kind: z.literal('team'), ext: z.literal('webp') }),
 ]);
 
 export type FieldErrors = Record<string, string>;

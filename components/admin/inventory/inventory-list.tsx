@@ -25,7 +25,13 @@ export function InventoryList({ cars }: { cars: InventoryCar[] }) {
 }
 
 function rowActionsCar(car: InventoryCar) {
-  return { id: car.id, slug: car.slug, status: car.status, title: car.title };
+  return {
+    id: car.id,
+    slug: car.slug,
+    status: car.status,
+    title: car.title,
+    showInSoldSection: car.showInSoldSection,
+  };
 }
 
 function Thumbnail({ car, className }: { car: InventoryCar; className?: string }) {

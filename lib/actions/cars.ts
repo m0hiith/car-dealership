@@ -139,11 +139,24 @@ export async function saveCar(raw: unknown): Promise<SaveCarResult> {
 
   await removeUnusedPhotos(supabase, car.id, car.photos, removed ?? []);
 
+  // Search overrides are not part of save_car(); the car row exists by now.
+  const { error: seoError } = await supabase
+    .from('cars')
+    .update({ seo_title: car.seoTitle, seo_description: car.seoDescription })
+    .eq('id', car.id);
+
   updateTag(CACHE_TAGS.cars);
   updateTag(CACHE_TAGS.car(slug));
   if (current && current.slug !== slug) updateTag(CACHE_TAGS.car(current.slug));
   revalidatePath('/admin', 'layout');
 
+  if (seoError) {
+    console.error('Saving search overrides failed', { carId: car.id, code: seoError.code, message: seoError.message });
+    return {
+      ok: false,
+      error: 'The car was saved, but the search title and description were not. Save again to retry.',
+    };
+  }
   return { ok: true, id: car.id, slug, status: car.status, created: !current };
 }
 
@@ -367,6 +380,32 @@ export async function setCarStatus(raw: CarStatusChange): Promise<CarActionResul
     return { ok: false, error: 'Could not update the car. Please try again.' };
   }
   if (count === 0) return { ok: false, error: 'Someone else just changed this car. Reload the page and try again.' };
+
+  revalidateCar(car.slug);
+  return { ok: true };
+}
+
+/** Shows or hides a sold car in the homepage "Recently Sold" section. Only sold cars have the setting. */
+export async function setShowInSoldSection(carId: string, show: boolean): Promise<CarActionResult> {
+  await requireAdmin();
+  const id = carIdSchema.safeParse(carId);
+  if (!id.success || typeof show !== 'boolean') return { ok: false, error: 'Invalid request.' };
+
+  const supabase = await createSupabaseServerClient();
+  const { data: car, error: loadError } = await supabase
+    .from('cars')
+    .select('status, slug')
+    .eq('id', id.data)
+    .maybeSingle();
+  if (loadError) return { ok: false, error: 'Could not update the car. Please try again.' };
+  if (!car) return { ok: false, error: 'This car no longer exists. Reload the page.' };
+  if (car.status !== 'sold') return { ok: false, error: 'Only sold cars can be shown here.' };
+
+  const { error } = await supabase.from('cars').update({ show_in_sold_section: show }).eq('id', id.data);
+  if (error) {
+    console.error('setShowInSoldSection failed', { carId: id.data, code: error.code, message: error.message });
+    return { ok: false, error: 'Could not update the car. Please try again.' };
+  }
 
   revalidateCar(car.slug);
   return { ok: true };
