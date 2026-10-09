@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
-import { Plus_Jakarta_Sans } from 'next/font/google';
+import { Montserrat } from 'next/font/google';
 import { siteUrl } from '@/lib/site-url';
 import './globals.css';
 
-const jakarta = Plus_Jakarta_Sans({
-  variable: '--font-jakarta',
-  subsets: ['latin'],
+// Brand typeface. latin-ext carries the ₹ sign, so prices render in Montserrat too.
+const montserrat = Montserrat({
+  variable: '--font-montserrat',
+  subsets: ['latin', 'latin-ext'],
   display: 'swap',
 });
 
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="en-IN" className={`${jakarta.variable} h-full`}>
+    <html lang="en-IN" className={`${montserrat.variable} h-full`}>
       {/* Browser extensions (e.g. Grammarly) add attributes to <body> before React hydrates. */}
       <body className="flex min-h-full flex-col" suppressHydrationWarning>
         {children}

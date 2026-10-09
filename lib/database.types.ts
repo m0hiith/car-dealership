@@ -143,6 +143,9 @@ export type Database = {
           published_at: string | null
           registration_city: string | null
           registration_state: string | null
+          seo_description: string | null
+          seo_title: string | null
+          show_in_sold_section: boolean
           slug: string
           sold_at: string | null
           status: Database["public"]["Enums"]["car_status"]
@@ -170,6 +173,9 @@ export type Database = {
           published_at?: string | null
           registration_city?: string | null
           registration_state?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          show_in_sold_section?: boolean
           slug: string
           sold_at?: string | null
           status?: Database["public"]["Enums"]["car_status"]
@@ -197,6 +203,9 @@ export type Database = {
           published_at?: string | null
           registration_city?: string | null
           registration_state?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          show_in_sold_section?: boolean
           slug?: string
           sold_at?: string | null
           status?: Database["public"]["Enums"]["car_status"]
@@ -335,42 +344,66 @@ export type Database = {
       leads: {
         Row: {
           car_id: string | null
+          budget_range: string | null
+          buying_timeline: string | null
+          city: string | null
           created_at: string
           email: string | null
+          follow_up_at: string | null
+          follow_up_note: string | null
+          has_exchange: boolean | null
           id: string
           message: string | null
           name: string
           notes: string | null
           phone: string
+          preferred_body_type: Database["public"]["Enums"]["body_type"] | null
           preferred_time: string | null
+          reminder_sent: boolean
           source: string
           status: Database["public"]["Enums"]["lead_status"]
           updated_at: string
         }
         Insert: {
           car_id?: string | null
+          budget_range?: string | null
+          buying_timeline?: string | null
+          city?: string | null
           created_at?: string
           email?: string | null
+          follow_up_at?: string | null
+          follow_up_note?: string | null
+          has_exchange?: boolean | null
           id?: string
           message?: string | null
           name: string
           notes?: string | null
           phone: string
+          preferred_body_type?: Database["public"]["Enums"]["body_type"] | null
           preferred_time?: string | null
+          reminder_sent?: boolean
           source?: string
           status?: Database["public"]["Enums"]["lead_status"]
           updated_at?: string
         }
         Update: {
           car_id?: string | null
+          budget_range?: string | null
+          buying_timeline?: string | null
+          city?: string | null
           created_at?: string
           email?: string | null
+          follow_up_at?: string | null
+          follow_up_note?: string | null
+          has_exchange?: boolean | null
           id?: string
           message?: string | null
           name?: string
           notes?: string | null
           phone?: string
+          preferred_body_type?: Database["public"]["Enums"]["body_type"] | null
           preferred_time?: string | null
+          reminder_sent?: boolean
           source?: string
           status?: Database["public"]["Enums"]["lead_status"]
           updated_at?: string
@@ -420,11 +453,182 @@ export type Database = {
           },
         ]
       }
+      sell_requests: {
+        Row: {
+          brand_id: string | null
+          brand_name: string
+          condition_notes: string | null
+          created_at: string
+          expected_price: number | null
+          follow_up_at: string | null
+          follow_up_note: string | null
+          fuel_type: Database["public"]["Enums"]["fuel_type"]
+          id: string
+          kms_driven: number
+          model_id: string | null
+          model_name: string
+          name: string
+          notes: string | null
+          owners: number
+          phone: string
+          photo_paths: string[]
+          preferred_time: string | null
+          registration_city: string | null
+          registration_state: string | null
+          reminder_sent: boolean
+          status: Database["public"]["Enums"]["sell_request_status"]
+          transmission: Database["public"]["Enums"]["transmission"]
+          updated_at: string
+          variant: string | null
+          year: number
+        }
+        Insert: {
+          brand_id?: string | null
+          brand_name: string
+          condition_notes?: string | null
+          created_at?: string
+          expected_price?: number | null
+          follow_up_at?: string | null
+          follow_up_note?: string | null
+          fuel_type: Database["public"]["Enums"]["fuel_type"]
+          id?: string
+          kms_driven: number
+          model_id?: string | null
+          model_name: string
+          name: string
+          notes?: string | null
+          owners: number
+          phone: string
+          photo_paths?: string[]
+          preferred_time?: string | null
+          registration_city?: string | null
+          registration_state?: string | null
+          reminder_sent?: boolean
+          status?: Database["public"]["Enums"]["sell_request_status"]
+          transmission: Database["public"]["Enums"]["transmission"]
+          updated_at?: string
+          variant?: string | null
+          year: number
+        }
+        Update: {
+          brand_id?: string | null
+          brand_name?: string
+          condition_notes?: string | null
+          created_at?: string
+          expected_price?: number | null
+          follow_up_at?: string | null
+          follow_up_note?: string | null
+          fuel_type?: Database["public"]["Enums"]["fuel_type"]
+          id?: string
+          kms_driven?: number
+          model_id?: string | null
+          model_name?: string
+          name?: string
+          notes?: string | null
+          owners?: number
+          phone?: string
+          photo_paths?: string[]
+          preferred_time?: string | null
+          registration_city?: string | null
+          registration_state?: string | null
+          reminder_sent?: boolean
+          status?: Database["public"]["Enums"]["sell_request_status"]
+          transmission?: Database["public"]["Enums"]["transmission"]
+          updated_at?: string
+          variant?: string | null
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sell_requests_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sell_requests_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          created_at: string
+          cta_label: string | null
+          cta_link: string | null
+          description: string
+          icon: string
+          id: string
+          is_visible: boolean
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cta_label?: string | null
+          cta_link?: string | null
+          description?: string
+          icon?: string
+          id?: string
+          is_visible?: boolean
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cta_label?: string | null
+          cta_link?: string | null
+          description?: string
+          icon?: string
+          id?: string
+          is_visible?: boolean
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      site_feedback: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          page_url: string | null
+          phone: string | null
+          rating: number
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          page_url?: string | null
+          phone?: string | null
+          rating: number
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          page_url?: string | null
+          phone?: string | null
+          rating?: number
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           address: string | null
           business_hours: string | null
           dealership_name: string
+          feedback_delay_seconds: number
+          feedback_enabled: boolean
+          google_site_verification: string | null
           id: number
           logo_url: string | null
           map_url: string | null
@@ -437,6 +641,9 @@ export type Database = {
           address?: string | null
           business_hours?: string | null
           dealership_name: string
+          feedback_delay_seconds?: number
+          feedback_enabled?: boolean
+          google_site_verification?: string | null
           id?: number
           logo_url?: string | null
           map_url?: string | null
@@ -449,6 +656,9 @@ export type Database = {
           address?: string | null
           business_hours?: string | null
           dealership_name?: string
+          feedback_delay_seconds?: number
+          feedback_enabled?: boolean
+          google_site_verification?: string | null
           id?: number
           logo_url?: string | null
           map_url?: string | null
@@ -456,6 +666,78 @@ export type Database = {
           socials?: Json
           updated_at?: string
           whatsapp_number?: string | null
+        }
+        Relationships: []
+      }
+      social_links: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          label: string
+          platform: string
+          sort_order: number
+          thumbnail_url: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label: string
+          platform: string
+          sort_order?: number
+          thumbnail_url?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          platform?: string
+          sort_order?: number
+          thumbnail_url?: string | null
+          url?: string
+        }
+        Relationships: []
+      }
+      team_members: {
+        Row: {
+          bio: string | null
+          created_at: string
+          id: string
+          is_visible: boolean
+          name: string
+          photo_url: string | null
+          role: string | null
+          sort_order: number
+          updated_at: string
+          years_experience: number | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          id?: string
+          is_visible?: boolean
+          name: string
+          photo_url?: string | null
+          role?: string | null
+          sort_order?: number
+          updated_at?: string
+          years_experience?: number | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          id?: string
+          is_visible?: boolean
+          name?: string
+          photo_url?: string | null
+          role?: string | null
+          sort_order?: number
+          updated_at?: string
+          years_experience?: number | null
         }
         Relationships: []
       }
@@ -531,6 +813,9 @@ export type Database = {
           published_at: string | null
           registration_city: string | null
           registration_state: string | null
+          seo_description: string | null
+          seo_title: string | null
+          show_in_sold_section: boolean
           slug: string
           sold_at: string | null
           status: Database["public"]["Enums"]["car_status"]
@@ -553,6 +838,7 @@ export type Database = {
           brand: string
           model: string
           price: number
+          sold_at: string | null
           status: Database["public"]["Enums"]["car_status"]
           variant: string
           year: number
@@ -562,6 +848,24 @@ export type Database = {
       jsonb_text_array: { Args: { p: Json }; Returns: string[] }
       public_browse_options: { Args: never; Returns: Json }
       public_car_facets: { Args: { p_filters: Json }; Returns: Json }
+      recent_sold_cars: {
+        Args: { p_limit?: number }
+        Returns: {
+          body_type: Database["public"]["Enums"]["body_type"]
+          brand: string
+          cover_url: string | null
+          fuel_type: Database["public"]["Enums"]["fuel_type"]
+          kms_driven: number
+          model: string
+          owners: number
+          price: number
+          slug: string
+          sold_at: string | null
+          transmission: Database["public"]["Enums"]["transmission"]
+          variant: string | null
+          year: number
+        }[]
+      }
       save_car: {
         Args: {
           p_car: Json
@@ -599,6 +903,9 @@ export type Database = {
           published_at: string | null
           registration_city: string | null
           registration_state: string | null
+          seo_description: string | null
+          seo_title: string | null
+          show_in_sold_section: boolean
           slug: string
           sold_at: string | null
           status: Database["public"]["Enums"]["car_status"]
@@ -618,6 +925,7 @@ export type Database = {
         Args: { p_key: string; p_max: number; p_window: string }
         Returns: boolean
       }
+      valid_sell_photo_paths: { Args: { p_paths: string[] }; Returns: boolean }
     }
     Enums: {
       body_type:
@@ -637,6 +945,13 @@ export type Database = {
         | "negotiation"
         | "closed"
         | "lost"
+      sell_request_status:
+        | "new"
+        | "contacted"
+        | "inspection_scheduled"
+        | "offer_made"
+        | "purchased"
+        | "rejected"
       transmission:
         | "manual"
         | "automatic"
@@ -789,6 +1104,14 @@ export const Constants = {
         "negotiation",
         "closed",
         "lost",
+      ],
+      sell_request_status: [
+        "new",
+        "contacted",
+        "inspection_scheduled",
+        "offer_made",
+        "purchased",
+        "rejected",
       ],
       transmission: [
         "manual",

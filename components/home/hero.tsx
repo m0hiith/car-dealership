@@ -9,7 +9,7 @@ import { HeroVideo } from './hero-video';
 export function Hero({ content, brands }: { content: HomepageContent; brands: BrowseOptions['brands'] }) {
   const { heroMedia: media, cta } = content;
   return (
-    <section aria-labelledby="hero-heading" className="relative isolate overflow-hidden bg-navy text-white">
+    <section aria-labelledby="hero-heading" className="relative isolate overflow-hidden bg-hero text-white">
       {media?.type === 'image' && (
         <Image src={media.url} alt="" fill priority sizes="100vw" className="-z-20 object-cover" />
       )}
@@ -22,9 +22,9 @@ export function Hero({ content, brands }: { content: HomepageContent; brands: Br
           <h1 id="hero-heading" className="text-headline-xl-mobile md:text-headline-xl">
             {content.heroTitle}
           </h1>
-          {content.heroDescription && <p className="text-body-lg text-white/85">{content.heroDescription}</p>}
+          {content.heroDescription && <p className="text-body-lg text-white/90">{content.heroDescription}</p>}
           {cta && (
-            <Link href={cta.href} className={buttonStyles({ variant: 'secondary', size: 'lg' })}>
+            <Link href={cta.href} className={buttonStyles({ variant: 'light', size: 'lg' })}>
               {cta.text}
             </Link>
           )}
@@ -33,7 +33,7 @@ export function Hero({ content, brands }: { content: HomepageContent; brands: Br
           <HeroSearch brands={brands} />
         </div>
       </div>
-      <div aria-hidden className="h-1 bg-linear-to-r from-trust via-trust-light to-highlight" />
+      <div aria-hidden className="h-1 bg-linear-to-r from-action via-highlight to-trust" />
     </section>
   );
 }

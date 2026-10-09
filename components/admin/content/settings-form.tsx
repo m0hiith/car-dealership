@@ -5,7 +5,7 @@ import { FormSection } from '@/components/admin/car-form/form-section';
 import { useUnsavedChangesWarning } from '@/components/admin/car-form/use-unsaved-changes-warning';
 import { fieldDomId, focusFirstError, FormSaveBar } from '@/components/admin/form-save-bar';
 import { MediaField, savedMedia, type MediaState } from '@/components/admin/media-field';
-import { Alert, Input, Textarea } from '@/components/ui';
+import { Alert, Input, Switch, Textarea } from '@/components/ui';
 import { useToast } from '@/components/ui/toast';
 import { saveSiteSettings } from '@/lib/actions/content';
 import type { AdminSiteSettings } from '@/lib/queries/admin-content';
@@ -31,6 +31,8 @@ const FIELD_ORDER = [
   'mapUrl',
   'businessHours',
   ...NETWORKS.map((n) => `socials.${n}`),
+  'feedbackDelayMinutes',
+  'googleSiteVerification',
 ];
 
 function toValues(s: AdminSiteSettings): Values {
@@ -42,6 +44,9 @@ function toValues(s: AdminSiteSettings): Values {
     mapUrl: s.mapUrl,
     businessHours: s.businessHours,
     socials: { instagram: '', facebook: '', youtube: '', ...s.socials },
+    feedbackEnabled: s.feedbackEnabled,
+    feedbackDelayMinutes: s.feedbackDelayMinutes,
+    googleSiteVerification: s.googleSiteVerification,
   };
 }
 
@@ -105,7 +110,7 @@ export function SettingsForm({ initial }: { initial: AdminSiteSettings }) {
     }
   }
 
-  const text = (key: Exclude<keyof Values, 'socials'>) => ({
+  const text = (key: Exclude<keyof Values, 'socials' | 'feedbackEnabled'>) => ({
     id: fieldDomId(key),
     value: values[key],
     error: errors[key],
@@ -185,6 +190,44 @@ export function SettingsForm({ initial }: { initial: AdminSiteSettings }) {
             error={errors[`socials.${network}`]}
           />
         ))}
+      </FormSection>
+
+      <FormSection
+        id="feedback"
+        step={4}
+        title="Feedback popup"
+        description="A small card asking visitors how their experience is going. Each visitor sees it at most once every 30 days."
+      >
+        <Switch
+          label="Show the feedback popup"
+          description="Answers appear under Feedback in the sidebar."
+          checked={values.feedbackEnabled}
+          onChange={(e) => set('feedbackEnabled', e.target.checked)}
+        />
+        <Input
+          {...text('feedbackDelayMinutes')}
+          label="Show it after (minutes)"
+          inputMode="numeric"
+          maxLength={2}
+          disabled={!values.feedbackEnabled}
+          hint="Time spent browsing the website, added up across pages. 1 to 60 minutes."
+        />
+      </FormSection>
+
+      <FormSection
+        id="search"
+        step={5}
+        title="Google Search Console"
+        description="Proves to Google that you own this website, so you can see how it appears in search."
+      >
+        <Input
+          {...text('googleSiteVerification')}
+          label="Verification tag (optional)"
+          autoComplete="off"
+          spellCheck={false}
+          placeholder='<meta name="google-site-verification" content="…" />'
+          hint='In Search Console, add the website as a "URL prefix" property and choose the "HTML tag" method, then paste the tag here and save.'
+        />
       </FormSection>
 
       <FormSaveBar dirty={dirty} saving={saving} busyNote={uploading ? 'Uploading…' : null} />

@@ -77,7 +77,7 @@ function Counter({ index, count, className }: { index: number; count: number; cl
   return (
     <span
       className={cn(
-        'pointer-events-none absolute rounded-full bg-navy/80 px-2.5 py-1 text-label-md text-white tabular-nums',
+        'pointer-events-none absolute rounded-full bg-brand/80 px-2.5 py-1 text-label-md text-white tabular-nums',
         className,
       )}
     >
@@ -232,7 +232,7 @@ function Lightbox({
     <dialog
       {...dialog}
       aria-label={`${alt} photos`}
-      className="m-0 h-dvh max-h-none w-screen max-w-none bg-navy-dark p-0 text-white backdrop:bg-navy-dark"
+      className="m-0 h-dvh max-h-none w-screen max-w-none bg-brand-dark p-0 text-white backdrop:bg-brand-dark"
     >
       <div className="relative flex h-full flex-col">
         <div className="flex items-center justify-between gap-4 px-4 py-2">

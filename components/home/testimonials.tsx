@@ -26,7 +26,7 @@ export function Testimonials({
       : null);
 
   return (
-    <HomeSection id="testimonials" title="What our customers say">
+    <HomeSection id="testimonials" title="What our customers say" tone="plain">
       <VideoReel urls={videos} label="Customer video" className="max-w-xl" />
       {shown && testimonials.length > 0 && (
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">

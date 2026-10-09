@@ -6,8 +6,9 @@ import { ADMIN_HOME, ADMIN_LOGIN } from '@/lib/validation/auth';
 const CAR_PAGE = /^\/cars\/([^/]+)\/?$/;
 
 /**
- * A sold or archived car's page is still rendered (it suggests similar
- * cars), but with 410 Gone so search engines drop it. Only full page loads
+ * An archived car's page, or one sold more than 30 days ago, is still
+ * rendered (it suggests similar cars) but with 410 Gone so search engines
+ * drop it. A recently sold car's page answers 200 (see isCarGone). Only full page loads
  * are checked: client-side navigations never show the status, and skipping
  * them saves a database call per click.
  */

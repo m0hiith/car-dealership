@@ -134,6 +134,8 @@ function validCar(overrides: Partial<CarSaveInput> = {}): CarSaveInput {
     registrationState: 'TS',
     registrationCity: 'Hyderabad',
     description: '',
+    seoTitle: '',
+    seoDescription: '',
     featured: false,
     features: ['Sunroof', 'sunroof', ' Reverse Camera '],
     photos: [photo],

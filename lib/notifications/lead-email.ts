@@ -2,7 +2,8 @@ import 'server-only';
 import { absoluteUrl } from '@/lib/site-url';
 
 /**
- * Optional email to the owner for each new website enquiry, sent through
+ * Optional email to the owner for each new website enquiry (and, through
+ * sell-request-email.ts, each Sell Your Car request), sent through
  * Resend's HTTP API (no SDK needed for one request). Off unless
  * LEAD_EMAIL_ENABLED=true and the key, recipient and sender are all set.
  * Never throws: a failed email must not lose or block the lead.
@@ -35,7 +36,7 @@ export type NewLeadEmail = {
   car?: { title: string; slug: string } | null;
 };
 
-const escapeHtml = (s: string) =>
+export const escapeHtml = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
 export function buildLeadEmail(lead: NewLeadEmail) {
@@ -53,30 +54,42 @@ export function buildLeadEmail(lead: NewLeadEmail) {
 
   const text = [...rows.map(([k, v]) => `${k}: ${v}`), '', `Open in the dashboard: ${adminUrl}`].join('\n');
   const html = `<div style="font-family:sans-serif;font-size:14px;color:#334155">
-<p style="font-size:16px;color:#0B2545"><strong>New enquiry on the ${escapeHtml(lead.dealershipName)} website</strong></p>
+<p style="font-size:16px;color:#0B2857"><strong>New enquiry on the ${escapeHtml(lead.dealershipName)} website</strong></p>
 <table cellpadding="4">${rows
     .map(
       ([k, v]) =>
         `<tr><td style="color:#64748B;vertical-align:top">${escapeHtml(k)}</td><td style="white-space:pre-line">${escapeHtml(v)}</td></tr>`,
     )
     .join('')}</table>
-<p><a href="${escapeHtml(adminUrl)}" style="color:#0284C7">Open in the dashboard</a></p>
+<p><a href="${escapeHtml(adminUrl)}" style="color:#0662C4">Open in the dashboard</a></p>
 </div>`;
   return { subject, text, html };
 }
 
-export async function sendNewLeadEmail(lead: NewLeadEmail): Promise<void> {
+export type OwnerEmail = { subject: string; text: string; html: string };
+
+/** Sends one email to the configured owner addresses. Never throws; returns whether it was sent. */
+export async function sendOwnerEmail(email: OwnerEmail, kind: string): Promise<boolean> {
   const config = leadEmailConfig();
-  if (!config) return;
+  if (!config) return false;
   try {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${config.apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: config.from, to: config.to, ...buildLeadEmail(lead) }),
+      body: JSON.stringify({ from: config.from, to: config.to, ...email }),
       signal: AbortSignal.timeout(10_000),
     });
-    if (!res.ok) console.error('New-lead email failed', { status: res.status, body: (await res.text()).slice(0, 300) });
+    if (!res.ok) {
+      console.error(`${kind} email failed`, { status: res.status, body: (await res.text()).slice(0, 300) });
+      return false;
+    }
+    return true;
   } catch (e) {
-    console.error('New-lead email failed', { message: e instanceof Error ? e.message : String(e) });
+    console.error(`${kind} email failed`, { message: e instanceof Error ? e.message : String(e) });
+    return false;
   }
+}
+
+export async function sendNewLeadEmail(lead: NewLeadEmail): Promise<void> {
+  await sendOwnerEmail(buildLeadEmail(lead), 'New-lead');
 }

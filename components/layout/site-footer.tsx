@@ -21,8 +21,8 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
   });
 
   return (
-    <footer className="mt-auto bg-navy-dark text-white/80">
-      <div aria-hidden className="h-1 bg-linear-to-r from-trust via-trust-light to-highlight" />
+    <footer className="mt-auto bg-brand-dark text-white/80">
+      <div aria-hidden className="h-1 bg-linear-to-r from-action via-highlight to-trust" />
       <div className="mx-auto grid w-full max-w-page gap-8 px-4 py-10 md:grid-cols-3 md:px-6">
         <div className="flex flex-col gap-2">
           <p className="text-headline-sm text-white">{settings.dealershipName}</p>

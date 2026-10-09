@@ -12,10 +12,11 @@ export type ChipProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'> & 
 /** Class string for a link that should look like a chip (e.g. a budget shortcut). */
 export function chipStyles({ selected = false, className }: { selected?: boolean; className?: string } = {}) {
   return cn(
-    'inline-flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-label-md whitespace-nowrap focus-ring transition-colors',
+    'inline-flex h-10 items-center gap-1.5 rounded-full border-[1.5px] px-4 text-label-md font-bold whitespace-nowrap focus-ring transition-colors',
+    // Selected is a solid fill so active filters read at a glance.
     selected
-      ? 'border-action bg-action-soft text-action-ink hover:border-action-ink'
-      : 'border-border bg-card text-chip-ink hover:border-tint hover:bg-chip',
+      ? 'border-brand-blue bg-brand-blue text-white shadow-card hover:border-brand hover:bg-brand'
+      : 'border-input bg-card text-navy hover:border-action hover:bg-action-soft',
     className,
   );
 }

@@ -27,6 +27,10 @@ export type SiteSettings = {
   mapUrl: string | null;
   businessHours: string | null;
   socials: SocialLinks;
+  /** The visitor feedback popup; null when staff have switched it off. */
+  feedback: { delaySeconds: number } | null;
+  /** Google Search Console verification token, or null. */
+  googleSiteVerification: string | null;
 };
 
 /** Public site settings for the showroom header, footer, contact block and CTAs. Cached; expired by the settings tag. */
@@ -35,7 +39,9 @@ export const getSiteSettings = unstable_cache(
     const supabase = createSupabasePublicClient();
     const { data, error } = await supabase
       .from('site_settings')
-      .select('dealership_name, logo_url, phone, whatsapp_number, address, map_url, business_hours, socials')
+      .select(
+        'dealership_name, logo_url, phone, whatsapp_number, address, map_url, business_hours, socials, feedback_enabled, feedback_delay_seconds, google_site_verification',
+      )
       .eq('id', 1)
       .maybeSingle();
     if (error) throw new Error(`Could not load site settings: ${error.message}`);
@@ -48,6 +54,8 @@ export const getSiteSettings = unstable_cache(
       mapUrl: data?.map_url ?? null,
       businessHours: data?.business_hours ?? null,
       socials: parseSocials(data?.socials),
+      feedback: data?.feedback_enabled ? { delaySeconds: data.feedback_delay_seconds } : null,
+      googleSiteVerification: data?.google_site_verification ?? null,
     };
   },
   ['site-settings'],

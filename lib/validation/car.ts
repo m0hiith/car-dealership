@@ -68,6 +68,9 @@ export const carSaveSchema = z
     registrationState: optionalText(40, 'State'),
     registrationCity: optionalText(60, 'City'),
     description: optionalText(5000, 'Description'),
+    /** Search overrides; empty = generated from the car. Lengths are what Google shows. */
+    seoTitle: optionalText(70, 'The search title'),
+    seoDescription: optionalText(160, 'The search description'),
     featured: z.boolean(),
     features: z
       .array(z.string().trim().min(1).max(60, { error: 'Keep each feature under 60 characters.' }))

@@ -27,7 +27,7 @@ export default async function AdminLoginPage({ searchParams }: PageProps<'/admin
     <main className="flex flex-1 items-center justify-center px-4 py-12">
       <div className="flex w-full max-w-sm flex-col gap-6">
         <div className="flex flex-col gap-1 text-center">
-          {dealershipName && <p className="text-label-md text-action uppercase">{dealershipName}</p>}
+          {dealershipName && <p className="text-label-md text-action-ink uppercase">{dealershipName}</p>}
           <h1 className="text-headline-lg-mobile text-navy md:text-headline-lg">Admin sign in</h1>
           <p className="text-body-md text-muted">For dealership staff only.</p>
         </div>

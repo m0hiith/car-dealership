@@ -1,6 +1,7 @@
 import { Badge, type BadgeTone } from '@/components/ui';
 import type { Database } from '@/lib/database.types';
 import { LEAD_STATUS_LABELS, type LeadStatus } from '@/lib/lead-status';
+import { SELL_REQUEST_STATUS_LABELS, type SellRequestStatus } from '@/lib/sell-status';
 
 type CarStatus = Database['public']['Enums']['car_status'];
 
@@ -26,6 +27,14 @@ export function CarStatusBadge({ status }: { status: CarStatus }) {
   return (
     <Badge tone={tone} dot data-testid="car-status">
       {label}
+    </Badge>
+  );
+}
+
+export function SellRequestStatusBadge({ status }: { status: SellRequestStatus }) {
+  return (
+    <Badge tone={status === 'new' ? 'blue' : 'neutral'} dot>
+      {SELL_REQUEST_STATUS_LABELS[status]}
     </Badge>
   );
 }

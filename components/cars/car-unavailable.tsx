@@ -9,9 +9,14 @@ import type { SiteSettings } from '@/lib/queries/settings';
 import { getRequestTime } from '@/lib/request-time';
 import { SimilarCars } from './similar-cars';
 
+const SIMILAR_ON_SOLD_PAGE = 3;
+
 /** A sold or archived car's old URL: say so, then offer similar cars (same body type or price band). */
 export async function CarUnavailable({ car, settings }: { car: UnavailableCar; settings: SiteSettings }) {
-  const similar = await getSimilarCars({ bodyType: car.bodyType, price: car.price }, false);
+  const similar = (await getSimilarCars({ bodyType: car.bodyType, price: car.price }, false)).slice(
+    0,
+    SIMILAR_ON_SOLD_PAGE,
+  );
   const name = [car.title, car.variant].filter(Boolean).join(' ');
   const whatsapp = whatsappHref(
     settings.whatsappNumber,
@@ -20,6 +25,17 @@ export async function CarUnavailable({ car, settings }: { car: UnavailableCar; s
 
   return (
     <div className="mx-auto flex w-full max-w-page flex-col gap-8 px-4 py-8 md:px-6 md:py-12">
+      {car.status === 'sold' && (
+        <div
+          role="status"
+          className="flex items-center gap-3 rounded-card border border-border bg-brand-blue px-4 py-3 text-white shadow-level-1"
+        >
+          <span className="rounded-full bg-white px-2.5 py-0.5 text-label-sm font-extrabold tracking-widest text-navy uppercase">
+            Sold
+          </span>
+          <p className="text-label-lg md:text-body-lg">This car has been sold. See similar cars below.</p>
+        </div>
+      )}
       <header className="flex flex-col items-start gap-3">
         <span className="flex size-12 items-center justify-center rounded-full bg-chip text-muted" aria-hidden>
           <CarIcon width={22} height={22} />

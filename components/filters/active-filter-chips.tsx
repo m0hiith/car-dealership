@@ -21,7 +21,7 @@ export function ActiveFilterChips() {
       <button
         type="button"
         onClick={() => update({ filters: EMPTY_FILTERS })}
-        className="ml-1 rounded-control px-1 text-label-lg text-action focus-ring hover:underline"
+        className="ml-1 rounded-control px-1 text-label-lg font-extrabold text-action-ink focus-ring hover:underline"
       >
         Clear all
       </button>

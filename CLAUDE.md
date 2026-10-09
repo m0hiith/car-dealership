@@ -36,24 +36,25 @@ Not allowed: a separate Node/Express server, MongoDB, Firebase, WordPress, Shopi
 
 ## 3. Design rules
 
-Font: **Plus Jakarta Sans**, loaded with `next/font/google` and exposed as a CSS variable. No other typefaces.
+Font: **Montserrat** (brand typeface: ExtraBold 800 for headlines, Bold for uppercase taglines with wide letter spacing), loaded with `next/font/google` and exposed as a CSS variable. No other typefaces.
 
 ### Colours
 
 | Token | Hex | Use |
 |---|---|---|
-| `navy` | `#0B2545` | Primary: header, nav, titles, primary buttons |
-| `navy-dark` | `#091E3A` | Primary hover, admin sidebar |
-| `action` | `#0284C7` | Interactive: secondary buttons, links, focus borders, filter selections |
-| `highlight` | `#0EA5E9` | Accents, active states, slider rails |
-| `trust` | `#16A34A` | Genuine trust signals only (see §4) |
-| `trust-light` | `#22C55E` | Trust signal accents |
+| `navy` | `#0B2857` | Brand primary: titles, primary buttons, footer, hero |
+| `navy-dark` | `#071C3F` | Primary hover, admin sidebar |
+| `action` | `#087CF0` | Brand secondary: accents, focus borders, filter selections, slider rails |
+| `action-ink` | `#0662C4` | Links, small blue text and secondary buttons (the brand blue is below AA as small text) |
+| `highlight` | `#4AA3F5` | Gradients and active states |
+| `trust` | `#35B20D` | Brand accent green (the logo tick); genuine trust signals only (see §4) |
+| `trust-ink` | `#1F6E07` | Green text and the WhatsApp button (the brand green is below AA as text) |
 | `reserved` | `#F59E0B` | The Reserved badge and banner, nothing else |
-| `canvas` | `#F8FAFC` | Page background |
+| `canvas` | `#F5F8FD` | Admin background, hover fills (public pages are white with light brand-blue bands) |
 | `card` | `#FFFFFF` | Cards, panels, inputs |
 | `border` | `#E2E8F0` | Default borders |
 
-Supporting neutrals from `DESIGN.md`: slate text `#64748B`, chip background `#F1F5F9`, chip text `#334155`, input border `#CBD5E1`, checkbox border `#94A3B8`, hover border `#BAE6FD`, focus ring `rgba(2, 132, 199, 0.15)`.
+Supporting neutrals: slate text `#526075`, chip background `#F1F5F9`, chip text `#334155`, input border `#CBD5E1`, checkbox border `#94A3B8`, hover border `#B9D9FC`, focus ring `rgba(8, 124, 240, 0.18)`. Source of truth: the VALUECARMART brand guide; the tokens live in `app/globals.css`.
 
 Ignore the Material-style palette in the `DESIGN.md` front matter (`surface`, `primary: #001026`, etc.). The table above is the palette.
 
@@ -65,10 +66,10 @@ Ignore the Material-style palette in the `DESIGN.md` front matter (`surface`, `p
 
 ### Elevation (exactly as in `DESIGN.md`)
 
-- **Level 0:** canvas `#F8FAFC`, no shadow.
-- **Level 1** (resting cards, filter panels): `1px solid #E2E8F0` + `0 1px 3px 0 rgba(11, 37, 69, 0.05), 0 1px 2px -1px rgba(11, 37, 69, 0.03)`
-- **Level 2** (card hover, active search bar): `0 10px 25px -5px rgba(11, 37, 69, 0.08), 0 8px 10px -6px rgba(11, 37, 69, 0.04)`, border shifts to `#BAE6FD`
-- **Level 3** (sticky CTA bars, modals, bottom sheets): `0 20px 25px -5px rgba(11, 37, 69, 0.12), 0 10px 10px -5px rgba(11, 37, 69, 0.06)`
+- **Level 0:** white page background, no shadow.
+- **Level 1** (resting cards, filter panels): `1px solid #E2E8F0` + `0 1px 3px 0 rgba(11, 40, 87, 0.05), 0 1px 2px -1px rgba(11, 40, 87, 0.03)`
+- **Level 2** (card hover, active search bar): `0 10px 25px -5px rgba(11, 40, 87, 0.08), 0 8px 10px -6px rgba(11, 40, 87, 0.04)`, border shifts to `#B9D9FC`
+- **Level 3** (sticky CTA bars, modals, bottom sheets): `0 20px 25px -5px rgba(11, 40, 87, 0.12), 0 10px 10px -5px rgba(11, 40, 87, 0.06)`
 
 Define these as `shadow-level-1/2/3` theme tokens. Do not invent other shadows.
 

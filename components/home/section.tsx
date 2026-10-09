@@ -8,6 +8,7 @@ export function HomeSection({
   title,
   description,
   action,
+  tone = 'wash',
   className,
   children,
 }: {
@@ -15,16 +16,22 @@ export function HomeSection({
   title: string;
   description?: ReactNode;
   action?: ReactNode;
+  /** Bands alternate on the navy page: `plain` and `wash` (a slightly lighter navy). */
+  tone?: 'plain' | 'wash';
   className?: string;
   children: ReactNode;
 }) {
   const headingId = `${id}-heading`;
   return (
-    <section id={id} aria-labelledby={headingId} className={cn('py-10 md:py-14', className)}>
+    <section
+      id={id}
+      aria-labelledby={headingId}
+      className={cn('py-10 md:py-14', tone === 'plain' ? undefined : 'bg-band-wash', className)}
+    >
       <Reveal className="mx-auto flex w-full max-w-page flex-col gap-6 px-4 md:px-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
           <div className="flex flex-col gap-1">
-            <span aria-hidden className="mb-2 h-1 w-10 rounded-full bg-linear-to-r from-trust to-trust-light" />
+            <span aria-hidden className="mb-2 h-1 w-10 rounded-full bg-linear-to-r from-action to-trust" />
             <h2 id={headingId} className="text-headline-lg-mobile text-navy md:text-headline-lg">
               {title}
             </h2>
@@ -40,4 +47,4 @@ export function HomeSection({
 
 /** "View all" style text link for a section header. */
 export const sectionLinkClass =
-  'inline-flex items-center gap-1 self-start rounded-control text-label-lg text-action focus-ring hover:text-action-ink hover:underline sm:self-auto';
+  'inline-flex items-center gap-1 self-start rounded-control text-label-lg text-action-ink focus-ring hover:text-navy hover:underline sm:self-auto';

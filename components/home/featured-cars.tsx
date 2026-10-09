@@ -11,7 +11,7 @@ export function FeaturedCars({ cars, featured, now }: { cars: PublicCarCard[]; f
     <HomeSection
       id="featured"
       title={featured ? 'Featured cars' : 'Latest arrivals'}
-      className="bg-card"
+      tone="plain"
       action={
         <Link href="/cars" className={sectionLinkClass}>
           View all cars

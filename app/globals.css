@@ -10,33 +10,44 @@
   --color-*: initial;
   --color-white: #ffffff;
 
-  --color-navy: #0b2545;
-  --color-navy-dark: #091e3a;
-  --color-action: #0284c7;
-  --color-highlight: #0ea5e9;
-  --color-trust: #16a34a;
-  --color-trust-light: #22c55e;
+  /* Brand (VALUECARMART brand guide). Exact brand values are used for large
+     surfaces and accents; the -ink shades are for text and small controls,
+     where the brand values are below WCAG AA contrast on white. */
+  --color-navy: #0b2857; /* primary */
+  --color-navy-dark: #071c3f;
+  /* Fixed brand fills. Unlike navy/action-ink (which flip to light ink on
+     the dark public background, see .surface-dark), these never change, so
+     buttons, selected chips and badges look the same everywhere. */
+  --color-brand: #0b2857;
+  --color-brand-dark: #071c3f;
+  --color-brand-blue: #0662c4;
+  --color-action: #087cf0; /* secondary: accents, rails, focus, selected states */
+  --color-highlight: #4aa3f5;
+  --color-trust: #35b20d; /* accent green: the logo tick, genuine trust signals */
+  --color-trust-light: #5ccb33;
   --color-reserved: #f59e0b;
-  --color-canvas: #f8fafc;
+  --color-canvas: #f5f8fd; /* admin background, hover fills */
+  --color-wash: #eef5fe; /* tonal section background (light brand blue) */
+  --color-wash-strong: #dcebfd;
   --color-card: #ffffff;
   --color-border: #e2e8f0;
 
-  /* Supporting neutrals (DESIGN.md) */
-  --color-muted: #64748b; /* slate text */
+  /* Supporting neutrals */
+  --color-muted: #526075; /* secondary text; AA on white and on wash */
   --color-chip: #f1f5f9; /* chip background */
   --color-chip-ink: #334155; /* chip + body text */
   --color-input: #cbd5e1; /* input border */
   --color-control: #94a3b8; /* checkbox border */
-  --color-tint: #bae6fd; /* level-2 hover border */
-  --color-focus: rgb(2 132 199 / 0.15); /* focus ring glow */
+  --color-tint: #b9d9fc; /* level-2 hover border */
+  --color-focus: rgb(8 124 240 / 0.18); /* focus ring glow */
 
-  /* Soft tints for badges and toasts (text colours meet WCAG AA on their bg) */
-  --color-trust-soft: #dcfce7;
-  --color-trust-ink: #166534;
+  /* Soft tints and inks (each ink meets WCAG AA on white and on its soft tint) */
+  --color-trust-soft: #e8f7e1;
+  --color-trust-ink: #1f6e07;
   --color-reserved-soft: #fef3c7;
   --color-reserved-ink: #92400e;
-  --color-action-soft: #e0f2fe;
-  --color-action-ink: #075985;
+  --color-action-soft: #e6f1fe;
+  --color-action-ink: #0662c4;
 
   /* Destructive actions and form errors (not in DESIGN.md; needed for danger buttons) */
   --color-danger: #dc2626;
@@ -45,7 +56,7 @@
 
   /* ---------- Typography ---------- */
   --font-*: initial;
-  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
 
   --text-*: initial;
   --text-headline-xl: 2.75rem;
@@ -90,7 +101,7 @@
   --text-label-md--font-weight: 600;
   --text-label-sm: 0.6875rem;
   --text-label-sm--line-height: 0.875rem;
-  --text-label-sm--letter-spacing: 0.04em;
+  --text-label-sm--letter-spacing: 0.08em;
   --text-label-sm--font-weight: 700;
 
   /* ---------- Radius ---------- */
@@ -102,9 +113,9 @@
 
   /* ---------- Elevation ---------- */
   --shadow-*: initial;
-  --shadow-level-1: 0 1px 3px 0 rgb(11 37 69 / 0.05), 0 1px 2px -1px rgb(11 37 69 / 0.03);
-  --shadow-level-2: 0 10px 25px -5px rgb(11 37 69 / 0.08), 0 8px 10px -6px rgb(11 37 69 / 0.04);
-  --shadow-level-3: 0 20px 25px -5px rgb(11 37 69 / 0.12), 0 10px 10px -5px rgb(11 37 69 / 0.06);
+  --shadow-level-1: 0 1px 3px 0 rgb(11 40 87 / 0.05), 0 1px 2px -1px rgb(11 40 87 / 0.03);
+  --shadow-level-2: 0 10px 25px -5px rgb(11 40 87 / 0.08), 0 8px 10px -6px rgb(11 40 87 / 0.04);
+  --shadow-level-3: 0 20px 25px -5px rgb(11 40 87 / 0.12), 0 10px 10px -5px rgb(11 40 87 / 0.06);
   /* Semantic aliases */
   --shadow-card: var(--shadow-level-1);
   --shadow-card-hover: var(--shadow-level-2);
@@ -124,6 +135,51 @@
   /* ---------- Layout ---------- */
   --container-page: 80rem; /* 1280px max container */
   --breakpoint-lg: 75rem; /* desktop starts at 1200px; md (768px) is tablet */
+}
+
+/*
+ * Dark public background (logo navy). Inside .surface-dark the "ink" tokens
+ * flip to light values, so headings, text, borders and ghost controls that
+ * sit straight on the background read as light-on-navy. Every white surface
+ * inside it (cards, inputs, chips, dialogs, anything bg-card or bg-white)
+ * flips them back, so its contents keep the normal light-theme colours.
+ * Fills that must not flip use the fixed brand tokens.
+ */
+.surface-dark {
+  --color-navy: #ffffff;
+  --color-muted: #b9c6da;
+  --color-chip-ink: #e3eaf5;
+  --color-border: rgb(255 255 255 / 0.14);
+  --color-input: rgb(255 255 255 / 0.32);
+  --color-control: rgb(255 255 255 / 0.5);
+  --color-chip: rgb(255 255 255 / 0.08);
+  --color-canvas: #0b2857;
+  --color-wash: #10346f;
+  --color-tint: rgb(140 196 255 / 0.55);
+  --color-action-ink: #8cc4ff;
+  --color-action-soft: rgb(140 196 255 / 0.14);
+  --color-trust-ink: #8fe06b;
+  --color-trust-soft: rgb(143 224 107 / 0.14);
+  background-color: var(--color-brand);
+  color: var(--color-chip-ink);
+}
+
+.surface-dark :is(.bg-card, .bg-white, .surface-light, dialog) {
+  --color-navy: #0b2857;
+  --color-muted: #526075;
+  --color-chip-ink: #334155;
+  --color-border: #e2e8f0;
+  --color-input: #cbd5e1;
+  --color-control: #94a3b8;
+  --color-chip: #f1f5f9;
+  --color-canvas: #f5f8fd;
+  --color-wash: #eef5fe;
+  --color-tint: #b9d9fc;
+  --color-action-ink: #0662c4;
+  --color-action-soft: #e6f1fe;
+  --color-trust-ink: #1f6e07;
+  --color-trust-soft: #e8f7e1;
+  color: var(--color-chip-ink);
 }
 
 @layer base {
@@ -159,6 +215,35 @@
     outline-offset: 2px;
     box-shadow: 0 0 0 6px var(--color-focus);
   }
+}
+
+/* Page background: soft blue wash fading into canvas, so pages never read as flat grey. */
+@utility bg-page {
+  background-color: var(--color-brand);
+  background-image: radial-gradient(60rem 30rem at 85% -5%, rgb(8 124 240 / 0.28), transparent 70%);
+  background-repeat: no-repeat;
+}
+
+/* Alternating homepage band: white fading into the blue wash. */
+@utility bg-band-wash {
+  background-image: linear-gradient(to bottom, var(--color-wash), transparent);
+}
+
+/* Hero: the most vibrant surface on the site. */
+@utility bg-hero {
+  background-color: var(--color-brand);
+  background-image:
+    radial-gradient(40rem 24rem at 90% 10%, rgb(8 124 240 / 0.6), transparent 70%),
+    radial-gradient(28rem 18rem at 75% 115%, rgb(53 178 13 / 0.22), transparent 70%),
+    linear-gradient(120deg, var(--color-brand) 0%, var(--color-brand) 35%, var(--color-brand-blue) 100%);
+}
+
+/* Prices: heavy, tabular, tight. Used on cards and the detail page. */
+@utility price-figure {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  color: var(--color-navy);
 }
 
 /* Horizontal photo strips that swipe natively but show no scrollbar. */
@@ -247,10 +332,62 @@
   .rise-delay-2 {
     animation-delay: 240ms;
   }
+  @keyframes feedback-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+  }
   @keyframes rise {
     from {
       opacity: 0;
       transform: translateY(14px);
+    }
+  }
+  /*
+   * Social banner. The track holds two identical groups and slides left by
+   * exactly one group, so the loop has no visible jump. It pauses while
+   * hovered, pressed (touch) or keyboard-focused.
+   */
+  .marquee {
+    overflow: hidden;
+    padding-block: 0.5rem;
+    mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+  }
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee var(--marquee-duration, 40s) linear infinite;
+  }
+  .marquee-group {
+    display: flex;
+    flex-shrink: 0;
+    align-items: stretch;
+    gap: 1rem;
+    padding-right: 1rem;
+  }
+  .marquee:hover .marquee-track,
+  .marquee:active .marquee-track,
+  .marquee:focus-within .marquee-track {
+    animation-play-state: paused;
+  }
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee {
+      overflow-x: auto;
+      mask-image: none;
+    }
+    .marquee-track {
+      animation: none;
+    }
+    /* The second group only exists for the loop. */
+    .marquee-group[aria-hidden='true'],
+    .marquee-repeat {
+      display: none;
     }
   }
   @media (prefers-reduced-motion: reduce) {

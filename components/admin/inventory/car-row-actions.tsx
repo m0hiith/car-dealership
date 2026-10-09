@@ -6,15 +6,21 @@ import { useState, useTransition, type ReactNode } from 'react';
 import { MORE_STATUS_ACTIONS, PUBLISH_ACTION, type StatusAction } from '@/components/admin/car-status-actions';
 import { Button, buttonStyles } from '@/components/ui';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
-import { CopyIcon, ExternalLinkIcon, MoreIcon, PencilIcon, TrashIcon } from '@/components/ui/icons';
+import { CopyIcon, ExternalLinkIcon, EyeIcon, MoreIcon, PencilIcon, TrashIcon } from '@/components/ui/icons';
 import { Modal } from '@/components/ui/modal';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/cn';
-import { deleteDraftCar, duplicateCar, setCarStatus } from '@/lib/actions/cars';
+import { deleteDraftCar, duplicateCar, setCarStatus, setShowInSoldSection } from '@/lib/actions/cars';
 import type { CarStatus } from '@/lib/car-options';
 import { isPublicStatus } from '@/lib/car-status';
 
-export type RowActionsCar = { id: string; slug: string; status: CarStatus; title: string };
+export type RowActionsCar = {
+  id: string;
+  slug: string;
+  status: CarStatus;
+  title: string;
+  showInSoldSection: boolean;
+};
 
 type Confirming = { kind: 'status'; action: StatusAction } | { kind: 'delete' };
 
@@ -63,6 +69,26 @@ export function CarRowActions({ car, className }: { car: RowActionsCar; classNam
         router.push(`/admin/cars/${result.id}/edit`);
       } catch {
         toast({ tone: 'error', title: 'Not duplicated', description: 'Check your connection and try again.' });
+      }
+    });
+  }
+
+  function toggleSoldSection() {
+    setSheetOpen(false);
+    startTransition(async () => {
+      try {
+        const result = await setShowInSoldSection(car.id, !car.showInSoldSection);
+        if (result.ok) {
+          toast({
+            tone: 'success',
+            title: car.showInSoldSection ? 'Hidden from Recently Sold' : 'Shown in Recently Sold',
+            description: car.title,
+          });
+        } else {
+          toast({ tone: 'error', title: 'Not changed', description: result.error });
+        }
+      } catch {
+        toast({ tone: 'error', title: 'Not changed', description: 'Check your connection and try again.' });
       }
     });
   }
@@ -134,6 +160,20 @@ export function CarRowActions({ car, className }: { car: RowActionsCar; classNam
               description="New draft with the same details and features. Photos and web address are not copied."
             />
           </li>
+          {car.status === 'sold' && (
+            <li>
+              <SheetItem
+                onClick={toggleSoldSection}
+                icon={<EyeIcon width={16} height={16} />}
+                label={car.showInSoldSection ? 'Hide from Recently Sold' : 'Show in Recently Sold'}
+                description={
+                  car.showInSoldSection
+                    ? 'Removes this car from the homepage section. Its link still says it has been sold.'
+                    : 'Adds this car back to the Recently Sold section on the homepage.'
+                }
+              />
+            </li>
+          )}
         </ul>
 
         <h3 className="mt-5 mb-2 text-label-md text-muted uppercase">Change status</h3>

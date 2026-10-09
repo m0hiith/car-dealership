@@ -1,5 +1,6 @@
-import { FUEL_LABELS, isAutomatic } from '@/lib/car-options';
+import { BODY_TYPE_LABELS, FUEL_LABELS, isAutomatic } from '@/lib/car-options';
 import type { PublicCarDetail } from '@/lib/queries/car-detail';
+import { jsonLdString } from '@/lib/seo';
 import { absoluteUrl } from '@/lib/site-url';
 
 /** schema.org Car with an Offer for a car detail page (PRODUCT_SPEC §14). */
@@ -29,12 +30,15 @@ export function CarJsonLd({ car }: { car: PublicCarDetail }) {
   if (car.colour) data.color = car.colour;
   if (car.engineCc) data.vehicleEngine = { '@type': 'EngineSpecification', engineDisplacement: `${car.engineCc} cc` };
   if (car.photos.length) data.image = car.photos.map((p) => p.url);
+  if (car.description) data.description = car.description.slice(0, 500);
+  data.bodyType = BODY_TYPE_LABELS[car.bodyType];
+  data.numberOfPreviousOwners = car.owners;
 
   return (
     <script
       type="application/ld+json"
-      // JSON.stringify output with "<" escaped cannot close the script tag.
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, '\\u003c') }}
+      // jsonLdString escapes "<", so the content cannot close the script tag.
+      dangerouslySetInnerHTML={{ __html: jsonLdString(data) }}
     />
   );
 }

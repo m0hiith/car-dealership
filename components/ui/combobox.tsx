@@ -208,7 +208,7 @@ export function Combobox({
                     onClick={() => choose(index)}
                     onMouseMove={() => setActive(index)}
                     className={cn(
-                      'flex min-h-11 cursor-pointer items-center gap-2 border-t border-border px-3 text-label-lg text-action',
+                      'flex min-h-11 cursor-pointer items-center gap-2 border-t border-border px-3 text-label-lg text-action-ink',
                       isActive && 'bg-action-soft',
                     )}
                   >

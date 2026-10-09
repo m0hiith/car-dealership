@@ -23,7 +23,7 @@ export function DialogCloseButton({ onClick, className }: { onClick: () => void;
 
 const fade =
   'opacity-0 transition-[opacity,translate,display,overlay] transition-discrete duration-200 ease-out open:opacity-100 starting:open:opacity-0 motion-reduce:transition-none ' +
-  'backdrop:bg-navy/50 backdrop:opacity-0 backdrop:transition-[opacity,display,overlay] backdrop:transition-discrete backdrop:duration-200 open:backdrop:opacity-100 starting:open:backdrop:opacity-0';
+  'backdrop:bg-brand/50 backdrop:opacity-0 backdrop:transition-[opacity,display,overlay] backdrop:transition-discrete backdrop:duration-200 open:backdrop:opacity-100 starting:open:backdrop:opacity-0';
 
 export type ModalProps = {
   open: boolean;

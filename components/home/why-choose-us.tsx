@@ -6,7 +6,7 @@ import { HomeSection } from './section';
 export function WhyChooseUs({ items, title = 'Why choose us' }: { items: WhyUsItem[]; title?: string }) {
   if (items.length === 0) return null;
   return (
-    <HomeSection id="why-us" title={title}>
+    <HomeSection id="why-us" title={title} tone="wash">
       <ul className="grid gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3">
         {items.map((item, i) => (
           <li

@@ -53,6 +53,8 @@ export type CarForEdit = {
   registrationState: string | null;
   registrationCity: string | null;
   description: string | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
   featured: boolean;
   publishedAt: string | null;
   soldAt: string | null;
@@ -67,7 +69,7 @@ export async function getCarForEdit(id: string): Promise<CarForEdit | null> {
   const { data: car, error } = await supabase
     .from('cars')
     .select(
-      'id, status, brand_id, model_id, variant, slug, price, original_price, year, kms_driven, fuel_type, transmission, body_type, engine_cc, owners, color, registration_state, registration_city, description, featured, published_at, sold_at, updated_at, car_features(feature_name), car_images(storage_path, image_url, sort_order, is_primary)',
+      'id, status, brand_id, model_id, variant, slug, price, original_price, year, kms_driven, fuel_type, transmission, body_type, engine_cc, owners, color, registration_state, registration_city, description, seo_title, seo_description, featured, published_at, sold_at, updated_at, car_features(feature_name), car_images(storage_path, image_url, sort_order, is_primary)',
     )
     .eq('id', id)
     .maybeSingle();
@@ -98,6 +100,8 @@ export async function getCarForEdit(id: string): Promise<CarForEdit | null> {
     registrationState: car.registration_state,
     registrationCity: car.registration_city,
     description: car.description,
+    seoTitle: car.seo_title,
+    seoDescription: car.seo_description,
     featured: car.featured,
     publishedAt: car.published_at,
     soldAt: car.sold_at,
@@ -121,6 +125,7 @@ export type InventoryCar = {
   kmsDriven: number;
   status: CarStatus;
   featured: boolean;
+  showInSoldSection: boolean;
   createdAt: string;
   updatedAt: string;
   coverUrl: string | null;
@@ -209,7 +214,7 @@ export async function getInventory(params: InventoryParams): Promise<Inventory> 
       supabase
         .from('cars')
         .select(
-          'id, slug, variant, price, year, kms_driven, status, featured, created_at, updated_at, brand:brands(name), model:models!cars_model_id_brand_id_fkey(name), car_images(image_url)',
+          'id, slug, variant, price, year, kms_driven, status, featured, show_in_sold_section, created_at, updated_at, brand:brands(name), model:models!cars_model_id_brand_id_fkey(name), car_images(image_url)',
         ),
     )
       // Only the cover photo.
@@ -233,6 +238,7 @@ export async function getInventory(params: InventoryParams): Promise<Inventory> 
       kmsDriven: car.kms_driven,
       status: car.status,
       featured: car.featured,
+      showInSoldSection: car.show_in_sold_section,
       createdAt: car.created_at,
       updatedAt: car.updated_at,
       coverUrl: car.car_images[0]?.image_url ?? null,

@@ -1,9 +1,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { FollowUpEditor } from '@/components/admin/follow-up-editor';
 import { CarStatusBadge, LeadStatusBadge } from '@/components/admin/status-badge';
 import { buttonStyles, Card } from '@/components/ui';
 import { ChevronDownIcon, ClockIcon, ImageIcon, MailIcon, PhoneIcon, QuoteIcon } from '@/components/ui/icons';
+import { BODY_TYPE_LABELS } from '@/lib/car-options';
 import { telHref, whatsappHref } from '@/lib/contact';
+import { followUpState } from '@/lib/follow-up';
+import { BUDGET_RANGES, BUYING_TIMELINES, isBudgetRange, isBuyingTimeline } from '@/lib/lead-profile';
 import { formatRelativeDateTime } from '@/lib/format';
 import type { AdminLead } from '@/lib/queries/admin-leads';
 import { LeadNotes } from './lead-notes';
@@ -18,6 +22,18 @@ function whatsappMessage(lead: AdminLead, dealershipName: string) {
   const first = lead.name.trim().split(/\s+/)[0];
   const car = lead.car ? ` about the ${[lead.car.title, lead.car.variant].filter(Boolean).join(' ')}` : '';
   return `Hi ${first}, this is ${dealershipName || 'the dealership'}. Thanks for your enquiry${car}.`;
+}
+
+/** The optional answers from the enquiry form, as label/value pairs; empty when none were given. */
+function profileFacts(profile: AdminLead['profile']): [string, string][] {
+  const facts: [string, string | null][] = [
+    ['Timeline', isBuyingTimeline(profile.timeline) ? BUYING_TIMELINES[profile.timeline] : null],
+    ['Budget', isBudgetRange(profile.budgetRange) ? BUDGET_RANGES[profile.budgetRange] : null],
+    ['Looking for', profile.bodyType ? BODY_TYPE_LABELS[profile.bodyType] : null],
+    ['Exchange car', profile.hasExchange === null ? null : profile.hasExchange ? 'Yes' : 'No'],
+    ['City', profile.city],
+  ];
+  return facts.filter((f): f is [string, string] => f[1] !== null);
 }
 
 export function LeadCard({ lead, dealershipName, now }: { lead: AdminLead; dealershipName: string; now: number }) {
@@ -35,6 +51,11 @@ export function LeadCard({ lead, dealershipName, now }: { lead: AdminLead; deale
                 {lead.name}
               </h2>
               {lead.status === 'new' && <LeadStatusBadge status="new" />}
+              {lead.followUpAt && followUpState(lead.followUpAt, now) === 'overdue' && (
+                <span className="rounded-full bg-danger-soft px-2.5 py-0.5 text-label-sm text-danger">
+                  Follow-up overdue
+                </span>
+              )}
             </div>
             <p className="text-body-sm text-muted">
               <time dateTime={lead.createdAt}>{formatRelativeDateTime(lead.createdAt, now)}</time>
@@ -70,6 +91,17 @@ export function LeadCard({ lead, dealershipName, now }: { lead: AdminLead; deale
           )}
         </div>
 
+        {profileFacts(lead.profile).length > 0 && (
+          <dl className="flex flex-wrap gap-2" aria-label="About the customer">
+            {profileFacts(lead.profile).map(([label, value]) => (
+              <div key={label} className="flex items-center gap-1 rounded-full bg-chip px-3 py-1 text-body-sm">
+                <dt className="text-muted">{label}:</dt>
+                <dd className="font-semibold text-chip-ink">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+
         {lead.car && (
           <Link
             href={`/admin/cars/${lead.car.id}/edit`}
@@ -101,6 +133,11 @@ export function LeadCard({ lead, dealershipName, now }: { lead: AdminLead; deale
             )}
           </div>
         )}
+      </div>
+
+      <div className="flex flex-col gap-3 border-t border-border px-4 py-4 md:px-6">
+        <h3 className="text-label-lg text-navy">Follow-up</h3>
+        <FollowUpEditor kind="lead" id={lead.id} at={lead.followUpAt} note={lead.followUpNote} now={now} />
       </div>
 
       <details className="group border-t border-border" open={lead.notes.length > 0 || undefined}>

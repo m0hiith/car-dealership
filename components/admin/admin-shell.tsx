@@ -17,24 +17,26 @@ function AdminBrand({ name }: { name: string }) {
 export function AdminShell({
   dealershipName,
   newLeadCount,
+  newSellCount,
   children,
 }: {
   dealershipName: string;
   newLeadCount: number;
+  newSellCount: number;
   children: ReactNode;
 }) {
   return (
     <ToastProvider>
       <div className="flex min-h-dvh flex-1 flex-col lg:flex-row">
         <AdminMobileNav brand={<AdminBrand name={dealershipName} />}>
-          <AdminNav newLeadCount={newLeadCount} />
+          <AdminNav newLeadCount={newLeadCount} newSellCount={newSellCount} />
         </AdminMobileNav>
 
         <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col bg-navy-dark lg:flex">
           <div className="px-6 pt-6 pb-8">
             <AdminBrand name={dealershipName} />
           </div>
-          <AdminNav newLeadCount={newLeadCount} />
+          <AdminNav newLeadCount={newLeadCount} newSellCount={newSellCount} />
         </aside>
 
         <main id="main" className="min-w-0 flex-1">

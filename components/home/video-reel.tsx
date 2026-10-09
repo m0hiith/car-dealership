@@ -73,7 +73,7 @@ function LoopingVideo({
       onClick={onToggle}
       aria-pressed={soundOn}
       aria-label={soundOn ? `Mute ${label}` : `Play ${label} with sound`}
-      className="group relative block aspect-9/16 w-full overflow-hidden rounded-card border border-border bg-navy shadow-card focus-visible:ring-2 focus-visible:ring-action focus-visible:outline-none"
+      className="group relative block aspect-9/16 w-full overflow-hidden rounded-card border border-border bg-brand shadow-card focus-visible:ring-2 focus-visible:ring-action focus-visible:outline-none"
     >
       <video
         ref={ref}

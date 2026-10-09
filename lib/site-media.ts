@@ -13,13 +13,15 @@ export const SITE_MEDIA_KINDS = {
   hero: ['webp', 'mp4', 'webm'],
   logo: ['webp'],
   testimonials: ['webp'],
+  social: ['webp'],
+  team: ['webp'],
 } as const satisfies Record<string, readonly string[]>;
 
 export type SiteMediaKind = keyof typeof SITE_MEDIA_KINDS;
 export type SiteMediaExt = (typeof SITE_MEDIA_KINDS)[SiteMediaKind][number];
 
 const PATH =
-  /^(hero|logo|testimonials)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(webp|mp4|webm)$/;
+  /^(hero|logo|testimonials|social|team)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(webp|mp4|webm)$/;
 
 export function isSiteMediaPath(path: string, kind?: SiteMediaKind): boolean {
   const match = PATH.exec(path);

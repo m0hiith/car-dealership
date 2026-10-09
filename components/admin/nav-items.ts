@@ -3,7 +3,9 @@ export const ADMIN_NAV = [
   { key: 'cars', href: '/admin/cars', label: 'Cars' },
   { key: 'add-car', href: '/admin/cars/new', label: 'Add Car' },
   { key: 'leads', href: '/admin/leads', label: 'Leads' },
+  { key: 'sell-requests', href: '/admin/sell-requests', label: 'Sell Requests' },
   { key: 'testimonials', href: '/admin/testimonials', label: 'Testimonials' },
+  { key: 'feedback', href: '/admin/feedback', label: 'Feedback' },
   { key: 'content', href: '/admin/content', label: 'Homepage Content' },
   { key: 'settings', href: '/admin/settings', label: 'Settings' },
 ] as const;

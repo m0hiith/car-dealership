@@ -38,7 +38,7 @@ export function Drawer({ open, onClose, title, header, children, className }: Dr
           </h2>
           {header}
         </div>
-        <DialogCloseButton onClick={onClose} className="text-current hover:bg-white/10 hover:text-current" />
+        <DialogCloseButton onClick={onClose} className="text-current hover:bg-current/10 hover:text-current" />
       </div>
       <div className="flex-1 overflow-y-auto overscroll-contain">{children}</div>
     </dialog>

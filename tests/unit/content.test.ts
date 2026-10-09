@@ -4,9 +4,12 @@ import { isSiteMediaPath, siteMediaPathFromUrl, siteMediaUrl } from '@/lib/site-
 import {
   fieldErrors,
   homepageContentSchema,
+  parseSiteVerification,
   parseSocials,
   parseWhyUs,
+  serviceSchema,
   siteSettingsSchema,
+  socialLinkSchema,
   testimonialSchema,
 } from '@/lib/validation/content';
 import { parseVideoUrl } from '@/lib/video';
@@ -139,12 +142,22 @@ describe('siteSettingsSchema', () => {
     mapUrl: 'https://maps.app.goo.gl/abc',
     businessHours: '',
     socials: { instagram: '', facebook: 'https://facebook.com/test', youtube: '' },
+    feedbackEnabled: true,
+    feedbackDelayMinutes: '5',
+    googleSiteVerification: '',
   } as const;
 
   it('accepts a landline phone and a mobile WhatsApp number', () => {
     const parsed = siteSettingsSchema.parse(base);
     expect(parsed.phone).toBe('040 1234 5678');
     expect(parsed.socials).toEqual({ instagram: null, facebook: 'https://facebook.com/test', youtube: null });
+  });
+
+  it('stores the feedback popup delay in minutes, from 1 to 60', () => {
+    expect(siteSettingsSchema.parse(base).feedbackDelayMinutes).toBe(5);
+    expect(siteSettingsSchema.safeParse({ ...base, feedbackDelayMinutes: '0' }).success).toBe(false);
+    expect(siteSettingsSchema.safeParse({ ...base, feedbackDelayMinutes: '61' }).success).toBe(false);
+    expect(siteSettingsSchema.safeParse({ ...base, feedbackDelayMinutes: 'five' }).success).toBe(false);
   });
 
   it('rejects a WhatsApp number that is not a mobile', () => {
@@ -197,5 +210,88 @@ describe('browse links', () => {
     expect(searchHref({})).toBe('/cars');
     expect(searchHref({ brand: 'hyundai' })).toBe('/cars?brand=hyundai');
     expect(searchHref({ brand: 'hyundai', model: 'creta' })).toBe('/cars?brand=hyundai&model=creta');
+  });
+});
+
+describe('socialLinkSchema', () => {
+  const base = {
+    platform: 'instagram',
+    label: 'Our Instagram',
+    url: 'https://www.instagram.com/dealer',
+    thumbnail: 'keep',
+    isActive: true,
+  } as const;
+
+  it('accepts a link on its own platform', () => {
+    expect(socialLinkSchema.safeParse(base).success).toBe(true);
+    expect(socialLinkSchema.safeParse({ ...base, platform: 'youtube', url: 'https://youtu.be/abc' }).success).toBe(
+      true,
+    );
+    expect(
+      socialLinkSchema.safeParse({ ...base, platform: 'whatsapp', url: 'https://wa.me/919876543210' }).success,
+    ).toBe(true);
+  });
+
+  it.each([
+    ['a link on the wrong platform', { url: 'https://www.facebook.com/dealer' }],
+    ['a look-alike host', { url: 'https://instagram.com.evil.example/x' }],
+    ['plain http', { url: 'http://www.instagram.com/dealer' }],
+    ['a javascript: link', { url: 'javascript:alert(1)' }],
+    ['a missing name', { label: '  ' }],
+  ])('rejects %s', (_name, change) => {
+    expect(socialLinkSchema.safeParse({ ...base, ...change }).success).toBe(false);
+  });
+
+  it('accepts any https link for "other"', () => {
+    expect(socialLinkSchema.safeParse({ ...base, platform: 'other', url: 'https://example.com/page' }).success).toBe(
+      true,
+    );
+    expect(socialLinkSchema.safeParse({ ...base, platform: 'other', url: 'http://example.com' }).success).toBe(false);
+  });
+});
+
+describe('serviceSchema', () => {
+  const base = {
+    title: 'Exchange',
+    description: 'Bring your old car.',
+    icon: 'exchange',
+    ctaLabel: '',
+    ctaLink: '',
+    isVisible: true,
+  } as const;
+
+  it('accepts a WhatsApp service (no link) and turns empty fields into null', () => {
+    const parsed = serviceSchema.parse(base);
+    expect(parsed.ctaLink).toBeNull();
+    expect(parsed.ctaLabel).toBeNull();
+  });
+
+  it.each([['/cars'], ['/sell'], ['https://example.com/finance']])('accepts the link %s', (ctaLink) => {
+    expect(serviceSchema.safeParse({ ...base, ctaLink }).success).toBe(true);
+  });
+
+  it.each([
+    ['a protocol-relative link', { ctaLink: '//evil.example' }],
+    ['a javascript: link', { ctaLink: 'javascript:alert(1)' }],
+    ['button text without a link', { ctaLabel: 'Learn more' }],
+    ['an unknown icon', { icon: 'rocket' }],
+    ['an empty title', { title: ' ' }],
+  ])('rejects %s', (_name, change) => {
+    expect(serviceSchema.safeParse({ ...base, ...change }).success).toBe(false);
+  });
+});
+
+describe('parseSiteVerification', () => {
+  it.each([
+    ['<meta name="google-site-verification" content="AbC_123-xyz987" />', 'AbC_123-xyz987'],
+    ["<meta name='google-site-verification' content='AbC_123-xyz987'>", 'AbC_123-xyz987'],
+    ['  AbC_123-xyz987  ', 'AbC_123-xyz987'],
+    ['', null],
+  ])('%s → %s', (input, expected) => {
+    expect(parseSiteVerification(input)).toBe(expected);
+  });
+
+  it.each(['short', '<script>alert(1)</script>', 'content="has spaces in it"'])('rejects %s', (input) => {
+    expect(parseSiteVerification(input)).toBeUndefined();
   });
 });

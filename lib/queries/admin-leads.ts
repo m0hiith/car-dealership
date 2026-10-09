@@ -1,5 +1,5 @@
 import 'server-only';
-import type { CarStatus } from '@/lib/car-options';
+import type { BodyType, CarStatus } from '@/lib/car-options';
 import { LEAD_STATUSES, type LeadStatus } from '@/lib/lead-status';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { leadSearchFilter, LEADS_PAGE_SIZE, type LeadsParams } from '@/lib/validation/admin-leads';
@@ -19,6 +19,16 @@ export type AdminLead = {
   status: LeadStatus;
   source: string;
   createdAt: string;
+  followUpAt: string | null;
+  followUpNote: string | null;
+  /** Optional answers from the enquiry form. */
+  profile: {
+    city: string | null;
+    budgetRange: string | null;
+    bodyType: BodyType | null;
+    timeline: string | null;
+    hasExchange: boolean | null;
+  };
   car: {
     id: string;
     slug: string;
@@ -72,7 +82,7 @@ export async function getLeads(params: LeadsParams): Promise<LeadsPage> {
       supabase
         .from('leads')
         .select(
-          'id, name, phone, email, preferred_time, message, status, source, created_at, car:cars(id, slug, year, variant, status, brand:brands(name), model:models!cars_model_id_brand_id_fkey(name), car_images(image_url, is_primary)), lead_notes(id, body, author_email, created_at)',
+          'id, name, phone, email, preferred_time, message, status, source, created_at, follow_up_at, follow_up_note, city, budget_range, preferred_body_type, buying_timeline, has_exchange, car:cars(id, slug, year, variant, status, brand:brands(name), model:models!cars_model_id_brand_id_fkey(name), car_images(image_url, is_primary)), lead_notes(id, body, author_email, created_at)',
         ),
     )
       .order('is_primary', { referencedTable: 'car.car_images', ascending: false })
@@ -95,6 +105,15 @@ export async function getLeads(params: LeadsParams): Promise<LeadsPage> {
       status: l.status,
       source: l.source,
       createdAt: l.created_at,
+      followUpAt: l.follow_up_at,
+      followUpNote: l.follow_up_note,
+      profile: {
+        city: l.city,
+        budgetRange: l.budget_range,
+        bodyType: l.preferred_body_type,
+        timeline: l.buying_timeline,
+        hasExchange: l.has_exchange,
+      },
       car: l.car
         ? {
             id: l.car.id,

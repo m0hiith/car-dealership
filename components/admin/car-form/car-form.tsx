@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { Alert, ChoiceChips, Input, Select, Switch, Textarea } from '@/components/ui';
 import { Combobox } from '@/components/ui/combobox';
+import { ChevronDownIcon } from '@/components/ui/icons';
 import { useToast } from '@/components/ui/toast';
 import { createBrand, createModel, saveCar } from '@/lib/actions/cars';
 import {
@@ -57,6 +58,8 @@ type Values = {
   registrationState: string;
   registrationCity: string;
   description: string;
+  seoTitle: string;
+  seoDescription: string;
   featured: boolean;
   features: string[];
 };
@@ -80,6 +83,8 @@ function initialValues(car: CarForEdit | null): Values {
       registrationState: DEFAULT_REGISTRATION.state,
       registrationCity: DEFAULT_REGISTRATION.city,
       description: '',
+      seoTitle: '',
+      seoDescription: '',
       featured: false,
       features: [],
     };
@@ -101,6 +106,8 @@ function initialValues(car: CarForEdit | null): Values {
     registrationState: car.registrationState ?? '',
     registrationCity: car.registrationCity ?? '',
     description: car.description ?? '',
+    seoTitle: car.seoTitle ?? '',
+    seoDescription: car.seoDescription ?? '',
     featured: car.featured,
     features: car.features,
   };
@@ -132,6 +139,8 @@ const FIELD_ORDER: CarField[] = [
   'registrationCity',
   'features',
   'description',
+  'seoTitle',
+  'seoDescription',
   'photos',
 ];
 
@@ -264,6 +273,8 @@ export function CarForm({ carId: initialCarId, car, options }: CarFormProps) {
       registrationState: values.registrationState,
       registrationCity: values.registrationCity,
       description: values.description,
+      seoTitle: values.seoTitle,
+      seoDescription: values.seoDescription,
       featured: values.featured,
       features: values.features,
       photos: photos.flatMap((p) => (p.status === 'done' && p.path ? [p.path] : [])),
@@ -571,6 +582,50 @@ export function CarForm({ carId: initialCarId, car, options }: CarFormProps) {
           error={errors.description}
         />
       </FormSection>
+
+      <details
+        className="group rounded-card border border-border bg-card shadow-card"
+        open={
+          Boolean(values.seoTitle || values.seoDescription || errors.seoTitle || errors.seoDescription) || undefined
+        }
+      >
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 text-headline-sm text-navy focus-ring md:p-6 [&::-webkit-details-marker]:hidden">
+          <span className="flex flex-col gap-1">
+            Search engines (optional)
+            <span className="text-body-md font-normal text-muted">
+              Leave empty to use titles and descriptions made from the car&apos;s details.
+            </span>
+          </span>
+          <ChevronDownIcon
+            width={20}
+            height={20}
+            className="shrink-0 text-muted transition-transform group-open:rotate-180"
+          />
+        </summary>
+        <div className="flex flex-col gap-5 px-4 pb-4 md:px-6 md:pb-6">
+          <Input
+            id={fieldId('seoTitle')}
+            label="Search title"
+            maxLength={70}
+            autoComplete="off"
+            placeholder="2022 Hyundai Creta SX Petrol Automatic for Sale in Hyderabad"
+            value={values.seoTitle}
+            onChange={(e) => set('seoTitle', e.target.value)}
+            hint={`${values.seoTitle.length} / 70. The dealership name is added after it.`}
+            error={errors.seoTitle}
+          />
+          <Textarea
+            id={fieldId('seoDescription')}
+            label="Search description"
+            rows={3}
+            maxLength={160}
+            value={values.seoDescription}
+            onChange={(e) => set('seoDescription', e.target.value)}
+            hint={`${values.seoDescription.length} / 160. Shown under the title in Google results.`}
+            error={errors.seoDescription}
+          />
+        </div>
+      </details>
 
       <FormSection
         id="photos"
