@@ -101,7 +101,7 @@ export function FollowUpEditor({
           value={value}
           onChange={(e) => setValue(e.target.value)}
           error={errors.at}
-          hint="Hyderabad time. Staff get an email when it is due."
+          hint="Hyderabad time. Due follow-ups are in the 8 AM reminder email and on the dashboard."
         />
         <div className="flex flex-wrap gap-2" role="group" aria-label="Quick follow-up times">
           {QUICK.map((q) => (

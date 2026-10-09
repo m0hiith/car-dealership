@@ -4,7 +4,7 @@ import { buildFollowUpReminderEmail, type DueReminder } from '@/lib/notification
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 
 /**
- * The reminder job (app/api/cron/follow-ups, every 15 minutes): finds
+ * The reminder job (app/api/cron/follow-ups, daily via Vercel Cron): finds
  * follow-ups that are due and not yet reminded, emails staff one list, then
  * marks them reminded. Uses the service-role client: there is no signed-in
  * user, and the route checks CRON_SECRET first.

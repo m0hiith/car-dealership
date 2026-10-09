@@ -2,9 +2,11 @@ import { timingSafeEqual } from 'node:crypto';
 import { NextResponse, type NextRequest } from 'next/server';
 import { runFollowUpReminders } from '@/lib/follow-up-reminders';
 
-// Follow-up reminder job. Vercel Cron calls it every 15 minutes (vercel.json)
-// with "Authorization: Bearer $CRON_SECRET"; any other scheduler can do the
-// same. A Route Handler because there is no form or page here (CLAUDE.md §2).
+// Follow-up reminder job. Vercel Cron calls it daily at 8:00 AM Hyderabad
+// time (02:30 UTC, vercel.json): the Hobby plan allows at most one run a
+// day, and a deployment asking for more is rejected. For reminders every 15
+// minutes, use Vercel Pro or have any external scheduler call this URL with
+// "Authorization: Bearer $CRON_SECRET". A Route Handler because there is no form or page here (CLAUDE.md §2).
 
 export const dynamic = 'force-dynamic';
 
