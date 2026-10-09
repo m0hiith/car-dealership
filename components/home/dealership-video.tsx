@@ -8,8 +8,8 @@ export function DealershipVideo({ url, dealershipName }: { url: string | null; d
   const title = dealershipName ? `${dealershipName} video` : 'Dealership video';
 
   return (
-    <HomeSection id="video" title="Take a look around" className="bg-card">
-      <div className="aspect-video w-full max-w-4xl overflow-hidden rounded-card border border-border bg-navy shadow-card">
+    <HomeSection id="video" title="Take a look around" tone="plain">
+      <div className="aspect-video w-full max-w-4xl overflow-hidden rounded-card border border-border bg-brand shadow-card">
         {video.kind === 'youtube' ? (
           <iframe
             src={`https://www.youtube-nocookie.com/embed/${video.id}?rel=0`}

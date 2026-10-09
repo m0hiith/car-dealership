@@ -25,14 +25,14 @@ export const metadata: Metadata = {
 };
 
 const colours = [
-  { name: 'navy', hex: '#0B2545', swatch: 'bg-navy', use: 'Header, titles, primary buttons' },
-  { name: 'navy-dark', hex: '#091E3A', swatch: 'bg-navy-dark', use: 'Primary hover, admin sidebar' },
-  { name: 'action', hex: '#0284C7', swatch: 'bg-action', use: 'Links, secondary buttons, focus' },
-  { name: 'highlight', hex: '#0EA5E9', swatch: 'bg-highlight', use: 'Accents, active states, rails' },
-  { name: 'trust', hex: '#16A34A', swatch: 'bg-trust', use: 'Genuine trust signals only' },
-  { name: 'trust-light', hex: '#22C55E', swatch: 'bg-trust-light', use: 'Trust accents' },
+  { name: 'navy', hex: '#0B2857', swatch: 'bg-navy', use: 'Primary: titles, primary buttons, footer' },
+  { name: 'navy-dark', hex: '#071C3F', swatch: 'bg-navy-dark', use: 'Primary hover, admin sidebar' },
+  { name: 'action', hex: '#087CF0', swatch: 'bg-action', use: 'Secondary: accents, rails, focus, selections' },
+  { name: 'highlight', hex: '#4AA3F5', swatch: 'bg-highlight', use: 'Accents, active states, rails' },
+  { name: 'trust', hex: '#35B20D', swatch: 'bg-trust', use: 'Accent: logo tick, genuine trust signals' },
+  { name: 'trust-light', hex: '#5CCB33', swatch: 'bg-trust-light', use: 'Trust accents' },
   { name: 'reserved', hex: '#F59E0B', swatch: 'bg-reserved', use: 'Reserved badge / banner only' },
-  { name: 'canvas', hex: '#F8FAFC', swatch: 'bg-canvas', use: 'Page background' },
+  { name: 'canvas', hex: '#F5F8FD', swatch: 'bg-canvas', use: 'Admin background, hover fills' },
   { name: 'card', hex: '#FFFFFF', swatch: 'bg-card', use: 'Cards, panels, inputs' },
   { name: 'border', hex: '#E2E8F0', swatch: 'bg-border', use: 'Default borders' },
   { name: 'muted', hex: '#64748B', swatch: 'bg-muted', use: 'Secondary text' },
@@ -131,7 +131,7 @@ export default function StyleguidePage() {
           </div>
         </Section>
 
-        <Section id="type" title="Typography · Plus Jakarta Sans">
+        <Section id="type" title="Typography · Montserrat">
           <div className="flex flex-col divide-y divide-border rounded-card border border-border bg-card">
             {typeScale.map((t) => (
               <div key={t.token} className="flex flex-col gap-1 p-4 md:flex-row md:items-baseline md:gap-6">

@@ -13,7 +13,7 @@ export function hasContactDetails(s: SiteSettings) {
 export function ContactSection({ settings }: { settings: SiteSettings }) {
   if (!hasContactDetails(settings)) return null;
   return (
-    <HomeSection id="contact" title="Visit or get in touch">
+    <HomeSection id="contact" title="Visit or get in touch" tone="plain">
       <ContactCard settings={settings} />
     </HomeSection>
   );
@@ -98,7 +98,7 @@ export function ContactCard({ settings }: { settings: SiteSettings }) {
 function Detail({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
   return (
     <div className="flex gap-3">
-      <span aria-hidden className="mt-0.5 text-action">
+      <span aria-hidden className="mt-0.5 text-action-ink">
         {icon}
       </span>
       <div className="flex flex-col gap-0.5">

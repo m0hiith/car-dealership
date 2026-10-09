@@ -36,7 +36,8 @@ export function HeroSearch({ brands }: { brands: BrowseOptions['brands'] }) {
       className="grid gap-3 rounded-card border border-border bg-card p-4 shadow-overlay md:grid-cols-[1fr_1fr_auto] md:items-end"
     >
       <Select
-        label="Brand"
+        label={<span className="text-label-md font-extrabold tracking-wider uppercase">Brand</span>}
+        className="font-bold"
         name="brand"
         value={brand}
         onChange={(e) => {
@@ -47,7 +48,8 @@ export function HeroSearch({ brands }: { brands: BrowseOptions['brands'] }) {
         options={brands.map((b) => ({ value: b.slug, label: `${b.name} (${b.count})` }))}
       />
       <Select
-        label="Model"
+        label={<span className="text-label-md font-extrabold tracking-wider uppercase">Model</span>}
+        className="font-bold"
         name="model"
         value={model}
         onChange={(e) => setModel(e.target.value)}
@@ -55,7 +57,7 @@ export function HeroSearch({ brands }: { brands: BrowseOptions['brands'] }) {
         placeholder={selectedBrand ? 'Any model' : 'Choose a brand first'}
         options={models.map((m) => ({ value: m.slug, label: `${m.name} (${m.count})` }))}
       />
-      <Button type="submit" size="lg" className="md:h-11">
+      <Button type="submit" size="lg" className="font-extrabold tracking-wide uppercase md:h-11">
         <SearchIcon width={18} height={18} />
         {matches > 0 ? `Show ${matches} car${matches === 1 ? '' : 's'}` : 'Search cars'}
       </Button>

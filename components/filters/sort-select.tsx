@@ -1,6 +1,7 @@
 'use client';
 
 import { Select } from '@/components/ui';
+import { cn } from '@/lib/cn';
 import { PUBLIC_SORTS, type PublicSort } from '@/lib/validation/public-cars';
 import { useListing } from './listing-context';
 
@@ -15,7 +16,7 @@ export function SortSelect({ className }: { className?: string }) {
       options={SORT_OPTIONS}
       value={state.sort}
       onChange={(e) => update({ sort: e.target.value as PublicSort })}
-      className={className}
+      className={cn('border-[1.5px] font-bold text-navy', className)}
     />
   );
 }

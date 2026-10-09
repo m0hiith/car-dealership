@@ -217,7 +217,7 @@ function FilterSection({ id, title, children }: { id: string; title: string; chi
       aria-labelledby={`${id}-title`}
       className="flex scroll-mt-4 flex-col gap-2 py-5 first:pt-0 last:pb-0"
     >
-      <h3 id={`${id}-title`} className="text-label-lg text-navy">
+      <h3 id={`${id}-title`} className="text-label-md font-extrabold tracking-wider text-navy uppercase">
         {title}
       </h3>
       {children}
@@ -244,7 +244,7 @@ function CollapsibleList<T>({ items, noun, render }: { items: T[]; noun: string;
           aria-expanded={expanded}
           aria-controls={listId}
           onClick={() => setExpanded((e) => !e)}
-          className="mt-1 self-start rounded-control text-label-lg text-action focus-ring hover:underline"
+          className="mt-1 self-start rounded-control text-label-lg text-action-ink focus-ring hover:underline"
         >
           {expanded ? 'Show fewer' : `Show all ${items.length} ${noun}`}
         </button>

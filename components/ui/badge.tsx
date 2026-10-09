@@ -8,7 +8,7 @@ const tones: Record<BadgeTone, { badge: string; dot: string }> = {
   green: { badge: 'bg-trust-soft text-trust-ink', dot: 'bg-trust' },
   amber: { badge: 'bg-reserved-soft text-reserved-ink', dot: 'bg-reserved' },
   blue: { badge: 'bg-action-soft text-action-ink', dot: 'bg-action' },
-  navy: { badge: 'bg-navy text-white', dot: 'bg-highlight' },
+  navy: { badge: 'bg-brand text-white', dot: 'bg-highlight' },
 };
 
 export type BadgeProps = HTMLAttributes<HTMLSpanElement> & {

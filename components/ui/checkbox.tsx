@@ -26,7 +26,7 @@ export function Checkbox({ id, label, meta, className, ...props }: CheckboxProps
           type="checkbox"
           className={cn(
             'peer size-5 cursor-pointer appearance-none rounded-sm border-[1.5px] border-control bg-card focus-ring transition-colors',
-            'group-hover:border-action checked:border-navy checked:bg-navy disabled:cursor-not-allowed',
+            'group-hover:border-action checked:border-brand checked:bg-brand disabled:cursor-not-allowed',
           )}
           {...props}
         />

@@ -80,14 +80,22 @@ export function FilterBar() {
   return (
     <>
       {/* Phones */}
-      <div className="sticky top-0 z-20 -mx-4 flex gap-3 border-b border-border bg-canvas/95 px-4 py-3 backdrop-blur md:hidden">
-        <Button variant="ghost" className="flex-1 bg-card" onClick={() => openFilters()}>
+      <div className="sticky top-16 z-20 -mx-4 flex gap-3 border-b border-border bg-canvas/95 px-4 py-3 backdrop-blur md:hidden">
+        <Button
+          variant="ghost"
+          className="flex-1 border-white/40 font-extrabold text-white uppercase tracking-wide hover:bg-white/10"
+          onClick={() => openFilters()}
+        >
           Filter
           {active > 0 && (
-            <span className="rounded-full bg-navy px-2 py-0.5 text-label-sm text-white tabular-nums">{active}</span>
+            <span className="rounded-full bg-brand-blue px-2 py-0.5 text-label-sm text-white tabular-nums">{active}</span>
           )}
         </Button>
-        <Button variant="ghost" className="flex-1 bg-card" onClick={() => setSortOpen(true)}>
+        <Button
+          variant="ghost"
+          className="flex-1 border-white/40 font-extrabold text-white uppercase tracking-wide hover:bg-white/10"
+          onClick={() => setSortOpen(true)}
+        >
           Sort
           <ChevronDownIcon width={16} height={16} />
         </Button>
@@ -143,7 +151,7 @@ export function FilterBar() {
                   }}
                   className={cn(
                     'flex min-h-12 w-full items-center justify-between rounded-control px-3 text-left text-body-lg focus-ring transition-colors hover:bg-chip',
-                    selected ? 'font-semibold text-action-ink' : 'text-chip-ink',
+                    selected ? 'bg-action-soft font-extrabold text-action-ink' : 'font-semibold text-navy',
                   )}
                 >
                   {PUBLIC_SORTS[option.value as PublicSort]}

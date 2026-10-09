@@ -102,7 +102,7 @@ export function InventoryToolbar({
           <Link
             href={inventoryHref(params, { q: undefined, brand: undefined, fuel: undefined, transmission: undefined })}
             scroll={false}
-            className="rounded-control text-label-lg text-action focus-ring hover:underline"
+            className="rounded-control text-label-lg text-action-ink focus-ring hover:underline"
           >
             Clear search and filters
           </Link>

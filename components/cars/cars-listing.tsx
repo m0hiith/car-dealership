@@ -138,10 +138,10 @@ export async function CarsListing({ basePath, state: raw, fixed = {}, title, int
         <div className="lg:grid lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start lg:gap-8">
           <aside
             aria-label="Filters"
-            className="sticky top-6 hidden max-h-[calc(100dvh-3rem)] overflow-y-auto rounded-card lg:block"
+            className="sticky top-24 hidden max-h-[calc(100dvh-7rem)] overflow-y-auto rounded-card lg:block"
           >
             <Card padding="lg">
-              <h2 className="mb-5 text-headline-sm text-navy">Filters</h2>
+              <h2 className="mb-5 text-headline-md font-extrabold text-navy">Filters</h2>
               <FilterPanel idPrefix="sidebar" />
             </Card>
           </aside>
@@ -149,7 +149,7 @@ export async function CarsListing({ basePath, state: raw, fixed = {}, title, int
           <div className="flex min-w-0 flex-col gap-4">
             <FilterBar />
             <div className="hidden items-center justify-end gap-3 lg:flex">
-              <span className="text-label-lg text-muted">Sort by</span>
+              <span className="text-label-md font-extrabold tracking-wider text-navy uppercase">Sort by</span>
               <SortSelect className="w-56" />
             </div>
             <ActiveFilterChips />

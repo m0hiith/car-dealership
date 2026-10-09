@@ -25,11 +25,11 @@ export function MobileNav({ brand, whatsapp }: { brand: ReactNode; whatsapp: str
         onClick={() => setOpen(true)}
         aria-label="Open menu"
         aria-haspopup="dialog"
-        className="-mr-2 inline-flex size-11 items-center justify-center rounded-control focus-ring hover:bg-white/10 md:hidden"
+        className="-mr-2 inline-flex size-11 items-center justify-center rounded-control focus-ring hover:bg-chip md:hidden"
       >
         <MenuIcon width={22} height={22} />
       </button>
-      <Drawer open={open} onClose={() => setOpen(false)} title="Menu" header={brand} className="bg-navy text-white">
+      <Drawer open={open} onClose={() => setOpen(false)} title="Menu" header={brand} className="bg-white text-navy">
         <nav aria-label="Main">
           <ul className="flex flex-col gap-1 px-2 py-2">
             {NAV.map((item) => (
@@ -37,7 +37,7 @@ export function MobileNav({ brand, whatsapp }: { brand: ReactNode; whatsapp: str
                 <Link
                   href={item.href}
                   aria-current={pathname.startsWith(item.href) ? 'page' : undefined}
-                  className="flex min-h-12 items-center rounded-control px-3 text-body-lg font-semibold text-white/85 focus-ring hover:bg-white/10 hover:text-white aria-[current=page]:bg-white/10 aria-[current=page]:text-white"
+                  className="flex min-h-12 items-center rounded-control px-3 text-body-lg font-extrabold text-navy focus-ring hover:bg-chip hover:text-navy aria-[current=page]:bg-action-soft aria-[current=page]:text-action-ink"
                 >
                   {item.label}
                 </Link>
